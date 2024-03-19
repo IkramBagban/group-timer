@@ -64,12 +64,11 @@ export default function App() {
       }
     );
 
-    // Clean up the subscription1 when the component unmounts
     return () => {
       subscription1.remove();
       subscription2.remove();
     };
-  }, []); // Add the dependency array here
+  }, []); 
 
   function scheduleNotificationHandler() {
     Notifications.scheduleNotificationAsync({

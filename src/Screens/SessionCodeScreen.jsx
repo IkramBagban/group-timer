@@ -12,7 +12,7 @@ const SessionCodeScreen = ({ navigation }) => {
 
   const handleContinue = () => {
     // Navigate to the second screen
-    navigation.navigate('SecondScreen');
+    navigation.navigate('TimerSetupScreen', {sessionCode});
   };
 
   return (
