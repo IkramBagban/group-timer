@@ -1,31 +1,39 @@
 import React, { useState } from 'react';
-import { View, TextInput, Button, TouchableOpacity, Text } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, Alert } from 'react-native';
+import Button from '../Components/Button';
 
 const SessionCodeScreen = ({ navigation }) => {
   const [sessionCode, setSessionCode] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
   const generateSessionCode = () => {
-    // Generate a new alphanumeric session code
     const newSessionCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     setSessionCode(newSessionCode);
   };
 
   const handleContinue = () => {
-    // Navigate to the second screen
-    navigation.navigate('TimerSetupScreen', {sessionCode});
+    if (!sessionCode) return Alert.alert('Session Code Error', 'Session Code is required. create session or join')
+    navigation.navigate('TimerSetupScreen', { sessionCode });
   };
 
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <TextInput
-        style={{ borderWidth: 1, borderColor: 'gray', padding: 10, marginBottom: 20 }}
-        placeholder="Enter session code"
-        value={sessionCode}
-        onChangeText={text => setSessionCode(text)}
-      />
-      <Button title="Generate New Code" onPress={generateSessionCode} />
+      <View>
+        <TextInput
+          style={{ borderWidth: 1, borderColor: 'gray', padding: 10, marginBottom: 20 }}
+          placeholder="Enter session code"
+          value={sessionCode}
+          onChangeText={text => setSessionCode(text)}
+        />
+        <Button title={isCreating ? "Have Session Code?" : "Create session"} onPress={() => setIsCreating(!isCreating)} />
+      </View>
+      {
+        isCreating ?
+          <Button title="Generate New Code" onPress={generateSessionCode} />
+          : null
+      }
       <TouchableOpacity onPress={handleContinue} style={{ marginTop: 20 }}>
-        <Text style={{ color: 'blue', textDecorationLine: 'underline' }}>Continue</Text>
+        <Text style={{ color: 'blue', textDecorationLine: 'underline' }}>{isCreating ? 'Create' : 'Join'}</Text>
       </TouchableOpacity>
     </View>
   );
