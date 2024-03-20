@@ -14,7 +14,7 @@ Notifications.setNotificationHandler({
   },
 });
 export default function App() {
-  useEffect(() => {
+ useEffect(() => {
     async function configurePushNotifications() {
       const { status } = await Notifications.getPermissionsAsync();
       let finalStatus = status;
@@ -48,10 +48,10 @@ export default function App() {
   useEffect(() => {
     const subscription1 = Notifications.addNotificationReceivedListener(
       (notifications) => {
-        console.warn("Notifications");
+        // console.warn("Notifications");
         // console.warn(notifications);
         const userName = notifications.request.content.data.userName;
-        console.warn("notification1 username -->" + userName);
+        // console.warn("notification1 username -->" + userName);
       }
     );
 
@@ -68,31 +68,12 @@ export default function App() {
       subscription1.remove();
       subscription2.remove();
     };
-  }, []); 
-
-  function scheduleNotificationHandler() {
-    Notifications.scheduleNotificationAsync({
-      content: {
-        title: "Time Started",
-        body: "This is the body of notification.",
-        data: { userName: "Max" },
-      },
-      trigger: {
-        seconds: 0.1,
-      },
-    });
-  }
-
+  }, []);
+  // scheduleNotificationHandler()
   return (
     <NavigationContainer >
-
       <StackNavigations />
     </NavigationContainer>
-    // <View style={styles.container}>
-    //   <SessionCodeScreen />
-    //   <Text>Click this</Text>
-    //   <Button title='Schedule Notification click' onPress={scheduleNotificationHandler} />
-    // </View>
   );
 }
 

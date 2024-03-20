@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, Platform } from 'react';
 import { View, TextInput, TouchableOpacity, Text, Alert } from 'react-native';
 import Button from '../Components/Button';
+import { sendNotificationHandler } from '../utils/sendNotification';
+
+
 
 const SessionCodeScreen = ({ navigation }) => {
+  
+
+
   const [sessionCode, setSessionCode] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
   const generateSessionCode = () => {
+   
+
     const newSessionCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     setSessionCode(newSessionCode);
   };
