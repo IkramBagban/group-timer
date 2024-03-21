@@ -1,21 +1,31 @@
-import { View, Text } from 'react-native'
-import React from 'react'
-import { createStackNavigator } from '@react-navigation/stack'
-// import App from '../App'
-import SessionCodeScreen from '../Screens/SessionCodeScreen'
-import TimerSetupScreen from '../Screens/TimerSetupScreen'
-import CountdownScreen from '../Screens/CountdownScreen'
+import { createStackNavigator } from '@react-navigation/stack';
+import React from 'react';
+import SessionCodeScreen from '../Screens/SessionCodeScreen';
+import TimerSetupScreen from '../Screens/TimerSetupScreen';
+import CountdownScreen from '../Screens/CountdownScreen';
 
 const StackNavigations = () => {
-    const Stack = createStackNavigator()
+  const Stack = createStackNavigator();
   return (
-      <Stack.Navigator>
-        {/* <Stack.Screen name='Main' component={App}/> */}
-        <Stack.Screen name='SessionCode' component={SessionCodeScreen}/>
-        <Stack.Screen name='TimerSetupScreen' component={TimerSetupScreen}/>
-        <Stack.Screen name='CountdownScreen' component={CountdownScreen}/>
-      </Stack.Navigator>
-  )
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: {
+          backgroundColor: '#1c1c1e', 
+        },
+        headerTintColor: '#fff', 
+        headerTitleStyle: {
+          fontWeight: 'bold',
+        },
+        cardStyle: {
+          backgroundColor: '#121212', 
+        },
+      }}
+    >
+      <Stack.Screen name='SessionCode' component={SessionCodeScreen} options={{ title: 'Session Code' }}/>
+      <Stack.Screen name='TimerSetupScreen' component={TimerSetupScreen} options={{ title: 'Timer Setup' }}/>
+      <Stack.Screen name='CountdownScreen' component={CountdownScreen} options={{ title: 'Countdown' }}/>
+    </Stack.Navigator>
+  );
 }
 
-export default StackNavigations
+export default StackNavigations;

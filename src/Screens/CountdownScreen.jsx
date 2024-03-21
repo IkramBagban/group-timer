@@ -10,14 +10,12 @@ import { sendNotificationHandler } from '../utils/sendNotification';
 const CountdownScreen = ({ route }) => {
   const { sessionCode } = route.params;
   const [userTimes, setUserTimes] = useState([
-    // Sort this according to totalSeconds initially, largest to smallest
     { id: 1, name: 'User 1', totalSeconds: 63, ready: false },
     { id: 2, name: 'User 2', totalSeconds: 54, ready: false },
     { id: 3, name: 'User 3', totalSeconds: 48, ready: false },
     { id: 4, name: 'User 4', totalSeconds: 39, ready: false },
     { id: 5, name: 'User 5', totalSeconds: 30, ready: false },
     { id: 6, name: 'User 6', totalSeconds: 20, ready: false },
-    // Add more users
   ].sort((a, b) => b.totalSeconds - a.totalSeconds));
 
   const [allReady, setAllReady] = useState(false);
@@ -87,7 +85,7 @@ const CountdownScreen = ({ route }) => {
 
   const handleUserReady = (userId) => {
     setUserTimes(prevState => prevState.map(user =>
-      user.id === userId ? { ...user, ready: !user.ready } : user
+      user.id === userId ? { ...user, ready: true} : user
     ));
   };
 
@@ -126,28 +124,44 @@ const CountdownScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#181818',
+    justifyContent: 'space-between', 
     alignItems: 'center',
     paddingTop: 20,
+    paddingBottom: 30,
+    paddingHorizontal: 10,
   },
   sessionCode: {
-    fontWeight: 'bold',
-    fontSize: 28,
-    color: '#4a4a4a',
-    marginBottom: 20,
+    fontSize: 24,
+    color: '#EDEDED',
+    marginTop: 10, 
+    fontWeight: '600',
+    letterSpacing: 1.2,
+    textAlign: 'center',
   },
   startButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 30,
-    marginTop: 20,
-    elevation: 4,
+    width: '90%',
+    paddingVertical: 15,
+    borderRadius: 30, 
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#FF9500',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.8,
+    shadowRadius: 6,
+    elevation: 8,
   },
   startButtonText: {
-    color: '#ffffff',
+    color: '#FFFFFF',
     fontSize: 20,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    letterSpacing: 1,
   },
 });
+
+
 
 export default CountdownScreen;
