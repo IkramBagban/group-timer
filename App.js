@@ -3,6 +3,7 @@ import * as Notifications from "expo-notifications";
 import { useEffect } from "react";
 import StackNavigations from "./src/Navigations/StackNavigations";
 import { NavigationContainer } from "@react-navigation/native";
+import Config from "react-native-config";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => {
@@ -69,6 +70,7 @@ export default function App() {
       subscription2.remove();
     };
   }, []);
+  console.log(Config.BASE_URL)
   // scheduleNotificationHandler()
   return (
     <NavigationContainer >
