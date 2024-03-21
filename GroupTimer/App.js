@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import StackNavigations from "./src/Navigations/StackNavigations";
 import { NavigationContainer } from "@react-navigation/native";
 import Config from "react-native-config";
+import io from "socket.io-client";
+import { useSocket } from "./src/hooks/useSocket";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => {
@@ -14,8 +16,10 @@ Notifications.setNotificationHandler({
     };
   },
 });
+
 export default function App() {
- useEffect(() => {
+ const socket = useSocket()
+  useEffect(() => {
     async function configurePushNotifications() {
       const { status } = await Notifications.getPermissionsAsync();
       let finalStatus = status;
@@ -70,10 +74,10 @@ export default function App() {
       subscription2.remove();
     };
   }, []);
-  console.log(Config.BASE_URL)
+  console.log(Config.BASE_URL);
   // scheduleNotificationHandler()
   return (
-    <NavigationContainer >
+    <NavigationContainer>
       <StackNavigations />
     </NavigationContainer>
   );

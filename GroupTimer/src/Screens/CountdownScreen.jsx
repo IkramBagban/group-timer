@@ -8,7 +8,8 @@ import { sendNotificationHandler } from '../utils/sendNotification';
 
 
 const CountdownScreen = ({ route }) => {
-  const { sessionCode } = route.params;
+  const { sessionCode, userDetail   } = route.params;
+  // console.error('CountdownScreen detail',route.params)
   const [userTimes, setUserTimes] = useState([
     { id: 1, name: 'User 1', totalSeconds: 63, ready: false },
     { id: 2, name: 'User 2', totalSeconds: 54, ready: false },

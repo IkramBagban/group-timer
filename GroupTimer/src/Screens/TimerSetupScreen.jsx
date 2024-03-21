@@ -1,51 +1,57 @@
 import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import React, { useState } from 'react';
 import { TextInput } from 'react-native-gesture-handler';
+import { useSocket } from '../hooks/useSocket';
 
 const TimerSetupScreen = ({ navigation, route }) => {
   const [name, setName] = useState('');
   const [minutes, setMinutes] = useState('');
   const [seconds, setSeconds] = useState('');
+  const socket = useSocket();
 
+  let { sessionCode, userDetail } = route.params
   const continueHandler = () => {
     const totalTime = parseInt(minutes || 0) * 60 + parseInt(seconds || 0);
-    if (!name.trim() || totalTime < 1) {
-      return Alert.alert('Field Empty', 'Please fill out all fields and ensure the time is more than zero.');
-    }
+    // if (!name.trim() || totalTime < 1) {
+    //   return Alert.alert('Field Empty', 'Please fill out all fields and ensure the time is more than zero.');
+    // }
+    console.log('socket', socket)
 
-    navigation.navigate('CountdownScreen', { name, totalTime, sessionCode: route.params.sessionCode });
-  };
+    userDetail = { ...userDetail, name : name, totalTime : totalTime }
+
+    navigation.navigate('CountdownScreen',{sessionCode,userDetail});
+  };  
 
   return (
     <View style={styles.container}>
       <Text style={styles.screenTitle}>Timer Setup</Text>
 
-      <TextInput 
-        style={styles.nameInput} 
-        placeholder='Enter your name' 
+      <TextInput
+        style={styles.nameInput}
+        placeholder='Enter your name'
         placeholderTextColor="#888"
-        value={name} 
-        onChangeText={setName} 
+        value={name}
+        onChangeText={setName}
       />
       <View style={styles.timeContainer}>
-        <TextInput 
-          style={styles.timeInput} 
-          placeholder='MM' 
+        <TextInput
+          style={styles.timeInput}
+          placeholder='MM'
           placeholderTextColor="#888"
-          value={minutes} 
-          keyboardType='numeric' 
+          value={minutes}
+          keyboardType='numeric'
           maxLength={2}
-          onChangeText={setMinutes} 
+          onChangeText={setMinutes}
         />
         <Text style={styles.colon}>:</Text>
-        <TextInput 
-          style={styles.timeInput} 
-          placeholder='SS' 
+        <TextInput
+          style={styles.timeInput}
+          placeholder='SS'
           placeholderTextColor="#888"
-          value={seconds} 
-          keyboardType='numeric' 
+          value={seconds}
+          keyboardType='numeric'
           maxLength={2}
-          onChangeText={setSeconds} 
+          onChangeText={setSeconds}
         />
       </View>
       <TouchableOpacity onPress={continueHandler} style={styles.continueButton}>
