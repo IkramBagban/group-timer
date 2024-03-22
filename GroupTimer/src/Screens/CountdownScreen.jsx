@@ -186,7 +186,7 @@ const CountdownScreen = ({ route }) => {
 
   useEffect(() => {
     const updateUsers = (users) => {
-      setUserTimes(users.sort((a, b) => b.totalSeconds - a.totalSeconds));
+      setUserTimes(users.sort((a, b) => b.totalTime - a.totalTime));
       setAllReady(users.every(user => user.isReady));
     };
 

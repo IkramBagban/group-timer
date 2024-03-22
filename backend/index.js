@@ -40,12 +40,39 @@ io.on("connection", (socket) => {
     }
   });
 
+
   socket.on("startSession", (sessionCode) => {
     const session = sessions[sessionCode];
     if (session && session.users.every((user) => user.isReady)) {
       session.sessionActive = true;
 
-      io.to(sessionCode).emit("sessionStarted", session);
+      const countdownInterval = setInterval(() => {
+        let allDone = true;
+        for (let user of session.users) {
+          console.log("session", session);
+          console.log("sessions", sessions);
+          const firstUser = session.users[0];
+          console.log("first user", firstUser);
+          if (firstUser.totalTime === 0) {
+            clearInterval(countdownInterval);
+            io.to(sessionCode).emit("sessionEnded", session.users);
+          }
+
+          if (
+            user.totalTime - 1 === firstUser.totalTime ||
+            user.userId === firstUser.userId
+          ) {
+            user.totalTime--;
+            allDone = false;
+          }
+        }
+        io.to(sessionCode).emit("sessionUpdate", session.users);
+
+        if (allDone) {
+          clearInterval(countdownInterval);
+          io.to(sessionCode).emit("sessionEnded", session.users);
+        }
+      }, 1000);
     }
   });
 
