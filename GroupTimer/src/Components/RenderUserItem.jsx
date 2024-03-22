@@ -1,16 +1,16 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
-const RenderUserItem = ({ item, handleReady }) => {
+const RenderUserItem = ({ item, handleUserReady }) => {
     return (
         <View style={styles.itemContainer}>
             <Text style={styles.userName}>{item.name}</Text>
-            <Text style={styles.userTime}>{`${Math.floor(item.totalSeconds / 60).toString().padStart(2, '0')}:${(item.totalSeconds % 60).toString().padStart(2, '0')}`}</Text>
+            <Text style={styles.userTime}>{`${Math.floor(item.totalTime / 60).toString().padStart(2, '0')}:${(item.totalTime % 60).toString().padStart(2, '0')}`}</Text>
             <TouchableOpacity
-                style={[styles.readyButton, { backgroundColor: item.ready ? 'green' : '#007bff' }]}
-                onPress={handleReady}
+                style={[styles.readyButton, { backgroundColor: item.isReady ? 'green' : '#007bff' }]}
+                onPress={handleUserReady}
             >
-                <Text style={styles.readyButtonText}>{item.ready ? 'Ready' : 'Not Ready'}</Text>
+                <Text style={styles.readyButtonText}>{item.isReady ? 'Ready' : 'Not Ready'}</Text>
             </TouchableOpacity>
         </View>
     );

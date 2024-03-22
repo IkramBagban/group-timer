@@ -5,7 +5,8 @@ import StackNavigations from "./src/Navigations/StackNavigations";
 import { NavigationContainer } from "@react-navigation/native";
 import Config from "react-native-config";
 import io from "socket.io-client";
-import { useSocket } from "./src/hooks/useSocket";
+// import { useSocket } from "./src/hooks/useSocket";
+import { SocketProvider, useSocket } from "./src/Context/SocketContext";
 
 Notifications.setNotificationHandler({
   handleNotification: async () => {
@@ -74,12 +75,15 @@ export default function App() {
       subscription2.remove();
     };
   }, []);
-  console.log(Config.BASE_URL);
+  // console.log(Config.BASE_URL);
   // scheduleNotificationHandler()
   return (
+    <SocketProvider>
+
     <NavigationContainer>
       <StackNavigations />
     </NavigationContainer>
+    </SocketProvider>
   );
 }
 
