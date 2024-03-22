@@ -1,17 +1,14 @@
-// src/contexts/SocketContext.js
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import io from 'socket.io-client';
+import { API_URL } from '../../config';
 
-// Create the context
 const SocketContext = createContext();
 
-// Create a provider component
 export const SocketProvider = ({ children }) => {
     const [socket, setSocket] = useState(null);
 
     useEffect(() => {
-        // Initialize the socket connection
-        const newSocket = io("http://localhost:2300/");
+        const newSocket = io(API_URL);
         
         setSocket(newSocket);
 
