@@ -40,7 +40,6 @@ io.on("connection", (socket) => {
     }
   });
 
-
   socket.on("startSession", (sessionCode) => {
     const session = sessions[sessionCode];
     if (session && session.users.every((user) => user.isReady)) {
@@ -56,6 +55,10 @@ io.on("connection", (socket) => {
           if (firstUser.totalTime === 0) {
             clearInterval(countdownInterval);
             io.to(sessionCode).emit("sessionEnded", session.users);
+          }
+
+          if (firstUser.totalTime - user.totalTime === 5) {
+            io.to(sessionCode).emit("sendNotification", user);
           }
 
           if (

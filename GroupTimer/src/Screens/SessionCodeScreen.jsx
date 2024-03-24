@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, Alert, StyleSheet } from 'react-native';
 import { useSocket } from '../Context/SocketContext';
 import Button from '../Components/Button';
+// import useNotification from '../hooks/useNotifications';
 
 const SessionCodeScreen = ({ navigation }) => {
   const [code, setCode] = useState('');
   const [mode, setMode] = useState('JOIN');
+  // const sendNotification = useNotification()
 
   const socket = useSocket()
   const generateCode = () => {
+    // console.warn('sending notificaton')
     const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     setCode(newCode);
   };

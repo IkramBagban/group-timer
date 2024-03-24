@@ -172,12 +172,14 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { useSocket } from '../Context/SocketContext';
 import RenderUserItem from '../Components/RenderUserItem';
+import useNotification from '../hooks/useNotifications';
 
 const CountdownScreen = ({ route }) => {
   const { sessionCode, userDetail } = route.params;
   const [userTimes, setUserTimes] = useState([]);
   const [allReady, setAllReady] = useState(false);
   const socket = useSocket();
+  const sendNotification = useNotification();
 
   useEffect(() => {
     console.log('User times:', userTimes);
@@ -190,9 +192,21 @@ const CountdownScreen = ({ route }) => {
       setAllReady(users.every(user => user.isReady));
     };
 
-    if (socket) {
-      socket.on('sessionUpdate', updateUsers);
-    }
+    if (!socket) return
+    socket.on('sessionUpdate', updateUsers);
+
+
+    socket.on('sendNotification', data => {
+      if (data.userId === userDetail.userId) {
+        // console.log('sending notification to ' + userDetail.name)
+        sendNotification("Timer about to start", 'your timer will start after 5 seconds', { username: userDetail.name })
+      }
+      console.warn('sending notification', data)
+    })
+
+    socket.on('sessionEnded', ()=>{
+      sendNotification("Complete", 'Timer has been completed', { username: userDetail.name })
+    })
 
     return () => {
       if (socket) {
@@ -210,6 +224,12 @@ const CountdownScreen = ({ route }) => {
       Alert.alert('All users must be ready before starting the session.');
       return;
     }
+    setTimeout(() => {
+      // if()
+      console.log('sending notification.')
+      sendNotification('testing', 'this is to test notification', { 'username': 'ikram' })
+
+    }, 1000)
     console.log('Starting session');
     socket.emit('startSession', sessionCode);
   };
@@ -258,7 +278,7 @@ const styles = StyleSheet.create({
 
   startButton: {
     marginTop: 20,
-    backgroundColor: '#FF6F00', 
+    backgroundColor: '#FF6F00',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 20,
