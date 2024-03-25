@@ -79,8 +79,16 @@ io.on("connection", (socket) => {
     }
   });
 
+  socket.on('removeFromsession', (sessionCode,socketId)=>{
+      sessions[sessionCode].users = sessions[sessionCode].users.filter(
+        (user) => user.socketId !== socketId
+      );
+      io.to(sessionCode).emit("sessionUpdate", sessions[sessionCode].users);
+  })
+
   socket.on("disconnect", () => {
     console.log(`User disconnected: ${socket.id}`);
+    
   });
 });
 

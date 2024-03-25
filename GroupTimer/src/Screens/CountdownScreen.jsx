@@ -204,12 +204,16 @@ const CountdownScreen = ({ route }) => {
       console.warn('sending notification', data)
     })
 
-    socket.on('sessionEnded', ()=>{
-      sendNotification("Complete", 'Timer has been completed', { username: userDetail.name })
+    socket.on('sessionEnded', (allUsers) => {
+      if (allUsers.userId === userDetail.userId)
+        sendNotification("Complete", 'Timer has been completed', { username: userDetail.name })
     })
 
     return () => {
       if (socket) {
+        console.log('remove user', userDetail)
+        console.log('remove user', socket.id)
+        socket.emit('removeFromsession', sessionCode,socket.id)
         socket.off('sessionUpdate', updateUsers);
       }
     };
