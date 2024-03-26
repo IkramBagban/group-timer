@@ -17,6 +17,14 @@ const sessions = {};
 io.on("connection", (socket) => {
   console.log("User connected: " + socket.id);
 
+  socket.on("doesSessionExist", (sessionCode) => {
+    if (!sessions[sessionCode]) {
+      socket.emit("isExistingSession", false);
+    } else {
+      socket.emit("isExistingSession", true);
+    }
+  });
+
   socket.on("createSession", ({ sessionCode, userDetail }) => {
     if (!sessions[sessionCode]) {
       sessions[sessionCode] = { users: [], sessionActive: false };
@@ -42,19 +50,28 @@ io.on("connection", (socket) => {
 
   socket.on("startSession", (sessionCode) => {
     const session = sessions[sessionCode];
-    if (session && session.users.every((user) => user.isReady)) {
+    // console.log("session 1", session);
+    // session.users.sort((a, b) => a.totalTime - b.totalTime);
+    session.users.sort((a, b) => b.totalTime - a.totalTime);
+    // console.log("session 2", session);
+
+    socket.to(sessionCode).emit('startingSession', session.users[0])
+
+    setTimeout(() => {
+      
+
+    if (session && session.users?.every((user) => user.isReady)) {
       session.sessionActive = true;
 
       const countdownInterval = setInterval(() => {
         let allDone = true;
-        for (let user of session.users) {
-          console.log("session", session);
-          console.log("sessions", sessions);
-          const firstUser = session.users[0];
-          console.log("first user", firstUser);
+        for (let user of session?.users) {
+
+          if(user.totalTime <= 0) return clearInterval(countdownInterval)
+          const firstUser = session?.users[0];
           if (firstUser.totalTime === 0) {
             clearInterval(countdownInterval);
-            io.to(sessionCode).emit("sessionEnded", session.users);
+            io.to(sessionCode).emit("sessionEnded", session?.users);
           }
 
           if (firstUser.totalTime - user.totalTime === 5) {
@@ -77,18 +94,22 @@ io.on("connection", (socket) => {
         }
       }, 1000);
     }
-  });
 
-  socket.on('removeFromsession', (sessionCode,socketId)=>{
-      sessions[sessionCode].users = sessions[sessionCode].users.filter(
-        (user) => user.socketId !== socketId
-      );
-      io.to(sessionCode).emit("sessionUpdate", sessions[sessionCode].users);
-  })
+    
+  }, 5000);
+  });
+  socket.on("removeFromsession", (sessionCode, socketId) => {
+    if (sessions[sessionCode]) {
+        sessions[sessionCode].users = sessions[sessionCode].users.filter(
+            (user) => user.socketId !== socketId
+        );
+        io.to(sessionCode).emit("sessionUpdate", sessions[sessionCode].users);
+    }
+});
+
 
   socket.on("disconnect", () => {
     console.log(`User disconnected: ${socket.id}`);
-    
   });
 });
 

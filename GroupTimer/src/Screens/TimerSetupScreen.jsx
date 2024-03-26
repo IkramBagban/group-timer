@@ -147,6 +147,7 @@ const TimerSetupScreen = ({ navigation, route }) => {
   const [seconds, setSeconds] = useState('');
   const socket = useSocket();
 
+  console.log('user detail', userDetail)
   const handleContinue = () => {
     if (!name.trim() || !minutes.trim() || !seconds.trim()) {
       alert('Please fill all fields.');
