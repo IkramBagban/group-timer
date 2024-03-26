@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, Alert, StyleSheet } from 'react-native';
 import { useSocket } from '../Context/SocketContext';
 import Button from '../Components/Button';
@@ -6,13 +6,9 @@ import useNotification from '../hooks/useNotifications';
 
 const SessionCodeScreen = ({ navigation }) => {
   const [code, setCode] = useState('');
-  const [mode, setMode] = useState('JOIN');
-const sendNotification = useNotification()
   const socket = useSocket()
 
   const generateCode = () => {
-    sendNotification("Complete", 'Timer has been completed', { username:' userDetail.name' })
-
     const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     setCode(newCode);
   };
@@ -24,18 +20,16 @@ const sendNotification = useNotification()
     }
 
     socket.emit('doesSessionExist', code)
-    
+
     const userId = code + Math.floor(Math.random() * 9000 + 100)
     let userDetail = { userId: userId, isCreator: false, isReady: false }
 
     socket.on('isExistingSession', isExistingSession => {
       if (!isExistingSession) {
-        userDetail = { ...userDetail, isCreator: true }
-        return navigation.navigate('TimerSetupScreen', { sessionCode: code, userDetail });
-
+        userDetail.isCreator = true;
       }
       navigation.navigate('TimerSetupScreen', { sessionCode: code, userDetail });
-    })
+    });
   };
 
   return (
@@ -57,7 +51,6 @@ const sendNotification = useNotification()
         />
       </View>
       <Button
-        // title={mode === 'JOIN' ? 'Join' : 'Create'}
         title='Join'
         onPress={handleProceed}
         backgroundColor='#FFA500'

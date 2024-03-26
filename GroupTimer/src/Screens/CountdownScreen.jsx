@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { useSocket } from '../Context/SocketContext';
 import RenderUserItem from '../Components/RenderUserItem';
@@ -6,8 +6,10 @@ import useNotification from '../hooks/useNotifications';
 
 const CountdownScreen = ({ route }) => {
   const { sessionCode, userDetail } = route.params;
+
   const [userTimes, setUserTimes] = useState([]);
   const [allReady, setAllReady] = useState(false);
+  
   const socket = useSocket();
   const sendNotification = useNotification();
 
@@ -17,44 +19,43 @@ const CountdownScreen = ({ route }) => {
       setAllReady(users.every(user => user.isReady));
     };
 
-    if (!socket) return
-
-    socket.on('startingSession', user => {
-      console.error('starting')
+    const handleStartingSession = (user) => {
       if (user.userId === userDetail.userId) {
-        sendNotification("Timer about to start", 'your timer will start after 5 seconds', { username: userDetail.name || '...' })
+        sendNotification("Timer about to start", 'Your timer will start after 5 seconds');
       }
-    })
+    };
 
-    socket.on('sessionUpdate', updateUsers);
-
-
-    socket.on('sendNotification', data => {
-      if (data.userId === userDetail.userId) {
-        sendNotification("Timer about to start", 'your timer will start after 5 seconds', { username: userDetail.name || '...' })
-      }
-      console.warn('sending notification', data)
-    })
-
-    socket.on('sessionEnded', (allUsers) => {
+    const handleSessionEnded = (allUsers) => {
       allUsers.forEach(user => {
         if (user.userId === userDetail.userId)
-          sendNotification("Complete", 'Timer has been completed', { username: userDetail.name || '...' })
-      })
-    })
+          sendNotification("Complete", 'Timer has been completed');
+      });
+    };
+
+    if (!socket) return
+
+
+    socket.on('startingSession', handleStartingSession);
+    socket.on('sessionUpdate', updateUsers);
+    socket.on('sendNotification', handleStartingSession);
+    socket.on('sessionEnded', handleSessionEnded);
 
     return () => {
       if (socket) {
-        socket.emit('removeFromsession', sessionCode, socket.id)
+        socket.emit('removeFromSession', sessionCode, socket.id);
+        socket.off('startingSession', handleStartingSession);
         socket.off('sessionUpdate', updateUsers);
+        socket.off('sendNotification', handleStartingSession);
+        socket.off('sessionEnded', handleSessionEnded);
       }
     };
   }, [socket]);
 
-  const handleUserReady = (item) => {
+  const handleUserReady = useCallback((item) => {
     if (item.userId === userDetail.userId)
       socket.emit('userReady', { sessionCode, userId: userDetail.userId });
-  };
+  }, [socket, sessionCode, userDetail]);
+
 
   const startSession = () => {
     if (!allReady) {
@@ -64,7 +65,6 @@ const CountdownScreen = ({ route }) => {
 
     socket.emit('startSession', sessionCode);
   };
-
 
   return (
     <View style={styles.container}>
