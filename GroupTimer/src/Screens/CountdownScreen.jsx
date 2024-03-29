@@ -9,6 +9,7 @@ const CountdownScreen = ({ route }) => {
 
   const [userTimes, setUserTimes] = useState([]);
   const [allReady, setAllReady] = useState(false);
+  const [sessionStarted, setSessionStarted] = useState(false);
 
   const socket = useSocket();
   const sendNotification = useNotification();
@@ -64,6 +65,7 @@ const CountdownScreen = ({ route }) => {
     }
 
     socket.emit('startSession', sessionCode);
+    setSessionStarted(true);
   };
 
   return (
@@ -78,8 +80,11 @@ const CountdownScreen = ({ route }) => {
       {userDetail.isCreator && (
         <TouchableOpacity
           onPress={startSession}
-          style={[styles.startButton, { backgroundColor: allReady ? '#32CD32' : 'grey' }]}
-          disabled={!allReady}
+          style={[styles.startButton, sessionStarted ? { backgroundColor: 'grey' } : (allReady ? { backgroundColor: '#32CD32' } : { backgroundColor: 'grey' })]}
+          disabled={!allReady || sessionStarted} // Disable button if not all ready or session already started
+
+        // style={[styles.startButton, { backgroundColor: allReady ? '#32CD32' : 'grey' }]}
+        // disabled={!allReady}
         >
           <Text style={styles.startButtonText}>Start Session</Text>
         </TouchableOpacity>
