@@ -9,7 +9,7 @@ const CountdownScreen = ({ route }) => {
 
   const [userTimes, setUserTimes] = useState([]);
   const [allReady, setAllReady] = useState(false);
-  
+
   const socket = useSocket();
   const sendNotification = useNotification();
 

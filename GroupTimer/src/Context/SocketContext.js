@@ -9,7 +9,7 @@ export const SocketProvider = ({ children }) => {
 
     useEffect(() => {
         const newSocket = io(API_URL);
-        
+        console.log('url connected', API_URL)
         setSocket(newSocket);
 
         newSocket.on('connect', () => {
