@@ -7,9 +7,9 @@ const useNotification = () => {
         content: { title, body, data },
         trigger: seconds ? { seconds: seconds } : null,
       });
-      console.log("response", response);
+      // console.log("response", response);
     } catch (e) {
-      console.log("error in useNotification hook", e);
+      console.error("error in useNotification hook", e);
     }
   };
   return sendNotification;

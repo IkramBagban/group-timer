@@ -22,7 +22,6 @@ const handleSocketEvents = (io, sessions) => {
       startSessionCountdown(sessionCode, socket);
     });
 
-
     socket.on("removeFromSession", (sessionCode, socketId) => {
       removeUserFromSession(sessionCode, socketId);
     });
@@ -30,7 +29,6 @@ const handleSocketEvents = (io, sessions) => {
     socket.on("disconnect", () => {
       console.log(`User disconnected: ${socket.id}`);
     });
-
   });
 
   const addUserToSession = (sessionCode, userDetail, socket) => {
@@ -50,7 +48,7 @@ const handleSocketEvents = (io, sessions) => {
     }
   };
 
-  const startSessionCountdown = (sessionCode,socket) => {
+  const startSessionCountdown = (sessionCode, socket) => {
     const session = sessions[sessionCode];
     session.users.sort((a, b) => b.totalTime - a.totalTime);
 
@@ -63,7 +61,9 @@ const handleSocketEvents = (io, sessions) => {
         const countdownInterval = setInterval(() => {
           let allDone = true;
           for (let user of session?.users) {
-            if (user.totalTime <= 0) return clearInterval(countdownInterval);
+            if (user.totalTime <= 0) {
+              return clearInterval(countdownInterval);
+            }
             const firstUser = session?.users[0];
             if (firstUser.totalTime === 0) {
               clearInterval(countdownInterval);

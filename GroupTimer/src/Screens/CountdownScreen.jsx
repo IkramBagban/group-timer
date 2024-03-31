@@ -22,6 +22,7 @@ const CountdownScreen = ({ route }) => {
 
     const handleStartingSession = (user) => {
       if (user.userId === userDetail.userId) {
+        console.log('sending notification to '+ user.name)
         sendNotification("Timer about to start", 'Your timer will start after 5 seconds');
       }
     };
@@ -77,17 +78,19 @@ const CountdownScreen = ({ route }) => {
         keyExtractor={item => item.userId?.toString() + item.name}
       />
 
-      {userDetail.isCreator && (
+      {userDetail.isCreator && (<>
+         { userTimes.length <= 1 ? <Text style={{color:'grey'}}>Game Requires more than one player to start</Text>  : ''}
         <TouchableOpacity
           onPress={startSession}
-          style={[styles.startButton, sessionStarted ? { backgroundColor: 'grey' } : (allReady ? { backgroundColor: '#32CD32' } : { backgroundColor: 'grey' })]}
-          disabled={!allReady || sessionStarted} // Disable button if not all ready or session already started
+          style={[styles.startButton, (sessionStarted ||  userTimes.length <= 1)? { backgroundColor: 'grey' } : (allReady ? { backgroundColor: '#32CD32' } : { backgroundColor: 'grey' })]}
+          disabled={!allReady || sessionStarted ||  userTimes.length <= 1} // Disable button if not all ready or session already started
 
-        // style={[styles.startButton, { backgroundColor: allReady ? '#32CD32' : 'grey' }]}
+          // style={[styles.startButton, { backgroundColor: allReady ? '#32CD32' : 'grey' }]}
         // disabled={!allReady}
         >
           <Text style={styles.startButtonText}>Start Session</Text>
         </TouchableOpacity>
+          </>
       )}
     </View>
   );
