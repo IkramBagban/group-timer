@@ -4,16 +4,19 @@ import { useSocket } from '../Context/SocketContext';
 import RenderUserItem from '../Components/RenderUserItem';
 import useNotification from '../hooks/useNotifications';
 
-const CountdownScreen = ({ route }) => {
+const CountdownScreen = ({ route, navigation }) => {
   const { sessionCode, userDetail } = route.params;
 
   const [userTimes, setUserTimes] = useState([]);
   const [allReady, setAllReady] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
+  // const [notificationSent, setNotificationSent] = useState(false);
 
   const socket = useSocket();
   const sendNotification = useNotification();
-console.log('user', userTimes)
+  // console.log('userties', userTimes.length)
+
+
   useEffect(() => {
     const updateUsers = (users) => {
       setUserTimes(users.sort((a, b) => b.totalTime - a.totalTime));
@@ -21,17 +24,33 @@ console.log('user', userTimes)
     };
 
     const handleStartingSession = (user) => {
+      console.log('sending notification to zzzzz')
+
       if (user.userId === userDetail.userId) {
-        console.log('sending notification to '+ user.name)
+        console.log('sending notification to ' + user.name)
         sendNotification("Timer about to start", 'Your timer will start after 5 seconds');
       }
     };
 
     const handleSessionEnded = (allUsers) => {
-      allUsers.forEach(user => {
-        if (user.userId === userDetail.userId)
-          sendNotification("Complete", 'Timer has been completed');
-      });
+
+      // if (notificationSent) return; // Prevent sending multiple notifications
+      let notificationSent = false;
+      for(let user of allUsers){
+        if (user.userId === userDetail.userId) {
+              console.log('user complete', user);
+              if (!notificationSent) {
+                console.log('called notifcationsent', notificationSent)
+                sendNotification("Complete", 'Timer has been completed');
+                notificationSent = true
+              }
+            }
+      }
+     
+      setTimeout(() => {
+        navigation.navigate('SessionCode')
+        console.log(`Session ${sessionCode} removed after ending.`);
+      }, 3000);
     };
 
     if (!socket) return
@@ -79,18 +98,18 @@ console.log('user', userTimes)
       />
 
       {userDetail.isCreator && (<>
-         { userTimes.length <= 1 ? <Text style={{color:'grey'}}>Game Requires more than one player to start</Text>  : ''}
+        {userTimes.length <= 1 ? <Text style={{ color: 'grey' }}>Game Requires more than one player to start</Text> : ''}
         <TouchableOpacity
           onPress={startSession}
-          style={[styles.startButton, (sessionStarted ||  userTimes.length <= 1)? { backgroundColor: 'grey' } : (allReady ? { backgroundColor: '#32CD32' } : { backgroundColor: 'grey' })]}
-          disabled={!allReady || sessionStarted ||  userTimes.length <= 1} // Disable button if not all ready or session already started
+          style={[styles.startButton, (sessionStarted || userTimes.length <= 1) ? { backgroundColor: 'grey' } : (allReady ? { backgroundColor: '#32CD32' } : { backgroundColor: 'grey' })]}
+          disabled={!allReady || sessionStarted || userTimes.length <= 1} // Disable button if not all ready or session already started
 
-          // style={[styles.startButton, { backgroundColor: allReady ? '#32CD32' : 'grey' }]}
+        // style={[styles.startButton, { backgroundColor: allReady ? '#32CD32' : 'grey' }]}
         // disabled={!allReady}
         >
           <Text style={styles.startButtonText}>Start Session</Text>
         </TouchableOpacity>
-          </>
+      </>
       )}
     </View>
   );

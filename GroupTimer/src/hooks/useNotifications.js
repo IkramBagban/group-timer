@@ -9,7 +9,7 @@ const useNotification = () => {
       });
       // console.log("response", response);
     } catch (e) {
-      console.log("error in useNotification hook", e);
+      // console.log("error in useNotification hook", e);
     }
   };
   return sendNotification;

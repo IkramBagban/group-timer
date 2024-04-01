@@ -18,6 +18,7 @@ export const SocketProvider = ({ children }) => {
 
         newSocket.on('disconnect', (reason) => {
             console.log(`Socket disconnected: ${reason}`);
+            
         });
 
         return () => {
