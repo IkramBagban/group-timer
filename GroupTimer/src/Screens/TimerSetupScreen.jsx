@@ -4,7 +4,7 @@ import { useSocket } from '../Context/SocketContext';
 
 const TimerSetupScreen = ({ navigation, route }) => {
   let { sessionCode, userDetail } = route.params;
-  
+
   const [name, setName] = useState('');
   const [minutes, setMinutes] = useState('');
   const [seconds, setSeconds] = useState('');
@@ -20,7 +20,10 @@ const TimerSetupScreen = ({ navigation, route }) => {
     const totalTime = parseInt(minutes, 10) * 60 + parseInt(seconds, 10);
      userDetail = { ...userDetail,name, totalTime }; 
 
-    socket.emit('createSession', {sessionCode, userDetail}); 
+    // socket.emit('createSession', {sessionCode, userDetail}); 
+    // const detail = { userId : userDetail.userId,name, totalTime }
+    socket.emit('updateUser', { sessionCode, userDetail });
+
 
     // Navigate to CountdownScreen with user details and session code
     navigation.navigate('CountdownScreen', { sessionCode, userDetail });

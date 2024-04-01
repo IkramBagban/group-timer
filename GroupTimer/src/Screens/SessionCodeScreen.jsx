@@ -17,20 +17,22 @@ const SessionCodeScreen = ({ navigation }) => {
       Alert.alert('Code Required', 'Enter a code to join a session.');
       return;
     }
-  
+
     socket.emit('doesSessionExist', code);
-  
+
     const userId = code + Math.floor(Math.random() * 9000 + 100);
     let userDetail = { userId: userId, isCreator: false, isReady: false };
-  
+
     socket.once('isExistingSession', isExistingSession => {
       if (!isExistingSession) {
+
         userDetail.isCreator = true;
       }
+      socket.emit('createSession', { sessionCode: code, userDetail });
       navigation.navigate('TimerSetupScreen', { sessionCode: code, userDetail });
     });
   };
-  
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Join a Session</Text>

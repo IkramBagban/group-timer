@@ -13,7 +13,7 @@ const CountdownScreen = ({ route }) => {
 
   const socket = useSocket();
   const sendNotification = useNotification();
-
+console.log('user', userTimes)
   useEffect(() => {
     const updateUsers = (users) => {
       setUserTimes(users.sort((a, b) => b.totalTime - a.totalTime));

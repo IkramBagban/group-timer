@@ -9,9 +9,31 @@ const handleSocketEvents = (io, sessions) => {
 
     socket.on("createSession", ({ sessionCode, userDetail }) => {
       if (!sessions[sessionCode]) {
-        sessions[sessionCode] = { users: [], sessionActive: false };
+        // sessions[sessionCode] = { users: [], sessionActive: false };
+        sessions[sessionCode] = { users: [] };
       }
       addUserToSession(sessionCode, userDetail, socket);
+      console.log('creted session', sessions[sessionCode])
+    });
+
+    socket.on("updateUser", ({ sessionCode, userDetail }) => {
+      // if (!userDetail.userId || !sessionCode || !sessions[sessionCode]) {
+      //   console.log("There is some error while updating user.");
+      //   return 
+      // }
+      console.log('user', userDetail)
+
+      let userIdx = sessions[sessionCode].users.findIndex(
+        (user) => user.userId === userDetail.userId
+      );
+      console.log('userIdx', userIdx)
+      if (userIdx !== -1) {
+        // console.log('before', sessions[sessionCode].users[userIdx])
+        sessions[sessionCode].users[userIdx] =userDetail;
+        // console.log('after', sessions[sessionCode].users[userIdx])
+        io.to(sessionCode).emit("sessionUpdate", sessions[sessionCode].users);
+      }
+      console.log('updated session', sessions[sessionCode])
     });
 
     socket.on("userReady", ({ sessionCode, userId }) => {
@@ -56,7 +78,7 @@ const handleSocketEvents = (io, sessions) => {
 
     setTimeout(() => {
       if (session && session.users?.every((user) => user.isReady)) {
-        session.sessionActive = true;
+        // session.sessionActive = true;
 
         const countdownInterval = setInterval(() => {
           let allDone = true;
@@ -94,6 +116,8 @@ const handleSocketEvents = (io, sessions) => {
   };
 
   const removeUserFromSession = (sessionCode, socketId) => {
+
+    console.log('remove socketId', socketId)
     if (sessions[sessionCode]) {
       sessions[sessionCode].users = sessions[sessionCode].users.filter(
         (user) => user.socketId !== socketId
