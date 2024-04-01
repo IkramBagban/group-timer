@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { useSocket } from '../Context/SocketContext';
 import RenderUserItem from '../Components/RenderUserItem';
 import useNotification from '../hooks/useNotifications';
+import { AppState } from 'react-native';
 
 const CountdownScreen = ({ route, navigation }) => {
   const { sessionCode, userDetail } = route.params;
@@ -10,11 +11,23 @@ const CountdownScreen = ({ route, navigation }) => {
   const [userTimes, setUserTimes] = useState([]);
   const [allReady, setAllReady] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
-  // const [notificationSent, setNotificationSent] = useState(false);
+  // const [appState, setAppState] = useState(AppState.currentState);
+
+  const appStateRef = useRef(AppState.currentState);
 
   const socket = useSocket();
   const sendNotification = useNotification();
-  // console.log('userties', userTimes.length)
+
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', nextAppState => {
+      appStateRef.current = nextAppState;
+    });
+console.log('appStateRef.current',appStateRef.current)
+    return () => {
+      subscription.remove();
+    }
+  }, [AppState.currentState]);
 
 
   useEffect(() => {
@@ -24,10 +37,11 @@ const CountdownScreen = ({ route, navigation }) => {
     };
 
     const handleStartingSession = (user) => {
-      console.log('sending notification to zzzzz')
-
-      if (user.userId === userDetail.userId) {
+      // console.log('sending notification to zzzzz', appState)
+      console.log('back', appStateRef.current === 'background')
+      if (user.userId === userDetail.userId && appStateRef.current === 'background') {
         console.log('sending notification to ' + user.name)
+
         sendNotification("Timer about to start", 'Your timer will start after 5 seconds');
       }
     };
@@ -36,17 +50,17 @@ const CountdownScreen = ({ route, navigation }) => {
 
       // if (notificationSent) return; // Prevent sending multiple notifications
       let notificationSent = false;
-      for(let user of allUsers){
+      for (let user of allUsers) {
         if (user.userId === userDetail.userId) {
-              console.log('user complete', user);
-              if (!notificationSent) {
-                console.log('called notifcationsent', notificationSent)
-                sendNotification("Complete", 'Timer has been completed');
-                notificationSent = true
-              }
-            }
+          console.log('user complete', user);
+          if (!notificationSent) {
+            console.log('called notifcationsent', notificationSent)
+            sendNotification("Complete", 'Timer has been completed');
+            notificationSent = true
+          }
+        }
       }
-     
+
       setTimeout(() => {
         navigation.navigate('SessionCode')
         console.log(`Session ${sessionCode} removed after ending.`);

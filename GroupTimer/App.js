@@ -71,9 +71,6 @@
 //   );
 // }
 
-
-
-
 // // import { Alert, Platform } from "react-native";
 // // import * as Notifications from "expo-notifications";
 // // import { useEffect } from "react";
@@ -128,8 +125,6 @@
 // //   );
 // // }
 
-
-
 import { Alert, Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import { useEffect } from "react";
@@ -154,8 +149,13 @@ export default function App() {
       let finalStatus = status;
 
       if (finalStatus !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
-        
+        const { status } = await Notifications.requestPermissionsAsync({
+          ios: {
+            allowAlert: true,
+            allowBadge: true,
+            allowSound: true,
+          },
+        });
         finalStatus = status;
       }
       if (finalStatus !== "granted") {

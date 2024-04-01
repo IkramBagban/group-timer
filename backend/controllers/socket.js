@@ -9,31 +9,9 @@ const handleSocketEvents = (io, sessions) => {
 
     socket.on("createSession", ({ sessionCode, userDetail }) => {
       if (!sessions[sessionCode]) {
-        // sessions[sessionCode] = { users: [], sessionActive: false };
-        sessions[sessionCode] = { users: [] };
+        sessions[sessionCode] = { users: [], sessionActive: false };
       }
       addUserToSession(sessionCode, userDetail, socket);
-      console.log('creted session', sessions[sessionCode])
-    });
-
-    socket.on("updateUser", ({ sessionCode, userDetail }) => {
-      // if (!userDetail.userId || !sessionCode || !sessions[sessionCode]) {
-      //   console.log("There is some error while updating user.");
-      //   return 
-      // }
-      console.log('user', userDetail)
-
-      let userIdx = sessions[sessionCode].users.findIndex(
-        (user) => user.userId === userDetail.userId
-      );
-      console.log('userIdx', userIdx)
-      if (userIdx !== -1) {
-        // console.log('before', sessions[sessionCode].users[userIdx])
-        sessions[sessionCode].users[userIdx] =userDetail;
-        // console.log('after', sessions[sessionCode].users[userIdx])
-        io.to(sessionCode).emit("sessionUpdate", sessions[sessionCode].users);
-      }
-      console.log('updated session', sessions[sessionCode])
     });
 
     socket.on("userReady", ({ sessionCode, userId }) => {
@@ -78,18 +56,23 @@ const handleSocketEvents = (io, sessions) => {
 
     setTimeout(() => {
       if (session && session.users?.every((user) => user.isReady)) {
-        // session.sessionActive = true;
+        session.sessionActive = true;
 
         const countdownInterval = setInterval(() => {
-          let allDone = true;
           for (let user of session?.users) {
-            if (user.totalTime <= 0) {
-              return clearInterval(countdownInterval);
-            }
             const firstUser = session?.users[0];
-            if (firstUser.totalTime === 0) {
+            if (firstUser.totalTime + 1 === 0) {
               clearInterval(countdownInterval);
-              io.to(sessionCode).emit("sessionEnded", session?.users);
+              if (!session.sessionEnded) {
+                io.to(sessionCode).emit("sessionEnded", session.users);
+                session.sessionEnded = true;
+
+              }
+              setTimeout(() => {
+                delete sessions[sessionCode]; // Removes the session
+                console.log(`Session ${sessionCode} removed after ending.`);
+              }, 3000); // 3000 milliseconds = 3 seconds
+              return;
             }
 
             if (firstUser.totalTime - user.totalTime === 5) {
@@ -101,23 +84,16 @@ const handleSocketEvents = (io, sessions) => {
               user.userId === firstUser.userId
             ) {
               user.totalTime--;
-              allDone = false;
             }
           }
           io.to(sessionCode).emit("sessionUpdate", session.users);
-
-          if (allDone) {
-            clearInterval(countdownInterval);
-            io.to(sessionCode).emit("sessionEnded", session.users);
-          }
+          
         }, 1000);
       }
     }, 5000);
   };
 
   const removeUserFromSession = (sessionCode, socketId) => {
-
-    console.log('remove socketId', socketId)
     if (sessions[sessionCode]) {
       sessions[sessionCode].users = sessions[sessionCode].users.filter(
         (user) => user.socketId !== socketId
