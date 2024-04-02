@@ -38,7 +38,8 @@ console.log('appStateRef.current',appStateRef.current)
 
     const handleStartingSession = (user) => {
       // console.log('sending notification to zzzzz', appState)
-      console.log('back', appStateRef.current === 'background')
+      // console.log('back', appStateRef.current === 'background')
+      console.log('sending notificaiton. ')
       if (user.userId === userDetail.userId && appStateRef.current === 'background') {
         console.log('sending notification to ' + user.name)
 

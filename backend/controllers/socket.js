@@ -53,44 +53,39 @@ const handleSocketEvents = (io, sessions) => {
     session.users.sort((a, b) => b.totalTime - a.totalTime);
 
     socket.to(sessionCode).emit("startingSession", session.users[0]);
+    const firstUser = session?.users[0];
+    let time = firstUser.totalTime + 5;
+    if (session && session.users?.every((user) => user.isReady)) {
+      session.sessionActive = true;
 
-    setTimeout(() => {
-      if (session && session.users?.every((user) => user.isReady)) {
-        session.sessionActive = true;
-
-        const countdownInterval = setInterval(() => {
-          for (let user of session?.users) {
-            const firstUser = session?.users[0];
-            if (firstUser.totalTime + 1 === 0) {
-              clearInterval(countdownInterval);
-              if (!session.sessionEnded) {
-                io.to(sessionCode).emit("sessionEnded", session.users);
-                session.sessionEnded = true;
-
-              }
-              setTimeout(() => {
-                delete sessions[sessionCode]; // Removes the session
-                console.log(`Session ${sessionCode} removed after ending.`);
-              }, 3000); // 3000 milliseconds = 3 seconds
-              return;
+      const countdownInterval = setInterval(() => {
+        console.log("time => " + time);
+        time = time - 1;
+        for (let user of session?.users) {
+          if (firstUser.totalTime + 1 === 0) {
+            clearInterval(countdownInterval);
+            if (!session.sessionEnded) {
+              io.to(sessionCode).emit("sessionEnded", session.users);
+              session.sessionEnded = true;
             }
-
-            if (firstUser.totalTime - user.totalTime === 5) {
-              io.to(sessionCode).emit("sendNotification", user);
-            }
-
-            if (
-              user.totalTime - 1 === firstUser.totalTime ||
-              user.userId === firstUser.userId
-            ) {
-              user.totalTime--;
-            }
+            setTimeout(() => {
+              delete sessions[sessionCode]; // Removes the session
+              console.log(`Session ${sessionCode} removed after ending.`);
+            }, 3000); // 3000 milliseconds = 3 seconds
+            return;
           }
-          io.to(sessionCode).emit("sessionUpdate", session.users);
-          
-        }, 1000);
-      }
-    }, 5000);
+
+          if (time - user.totalTime === 5) {
+            io.to(sessionCode).emit("sendNotification", user);
+          }
+
+          if (user.totalTime - 1 === time) {
+            user.totalTime--;
+          }
+        }
+        io.to(sessionCode).emit("sessionUpdate", session.users);
+      }, 1000);
+    }
   };
 
   const removeUserFromSession = (sessionCode, socketId) => {
