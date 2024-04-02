@@ -70,21 +70,16 @@ const handleSocketEvents = (io, sessions) => {
             io.to(sessionCode).emit("sessionEnded", session.users);
             session.sessionEnded = true;
           }
-          setTimeout(() => {
-            delete sessions[sessionCode]; // Removes the session
-          }, 5000); // 5000 milliseconds = 5 seconds
+          setTimeout(() => delete sessions[sessionCode], 5000); // 5000 milliseconds = 5 seconds
           return;
         }
 
         // Notify user 5 seconds before their countdown starts
-        if (remainingTime - 1 - user.totalTime === 5) {
+        if (remainingTime - 1 - user.totalTime === 5)
           io.to(sessionCode).emit("sendNotification", user);
-        }
 
         // Adjust user's totalTime as the session countdown progresses
-        if (remainingTime <= user.totalTime) {
-          user.totalTime--;
-        }
+        if (remainingTime <= user.totalTime) user.totalTime--;
       }
       io.to(sessionCode).emit("sessionUpdate", session.users);
     }, 1000);
