@@ -50,42 +50,44 @@ const handleSocketEvents = (io, sessions) => {
 
   const startSessionCountdown = (sessionCode, socket) => {
     const session = sessions[sessionCode];
-    session.users.sort((a, b) => b.totalTime - a.totalTime);
-
-    socket.to(sessionCode).emit("startingSession", session.users[0]);
-    const firstUser = session?.users[0];
-    let time = firstUser.totalTime + 5;
-    if (session && session.users?.every((user) => user.isReady)) {
-      session.sessionActive = true;
-
-      const countdownInterval = setInterval(() => {
-        console.log("time => " + time);
-        time = time - 1;
-        for (let user of session?.users) {
-          if (firstUser.totalTime + 1 === 0) {
-            clearInterval(countdownInterval);
-            if (!session.sessionEnded) {
-              io.to(sessionCode).emit("sessionEnded", session.users);
-              session.sessionEnded = true;
-            }
-            setTimeout(() => {
-              delete sessions[sessionCode]; // Removes the session
-              console.log(`Session ${sessionCode} removed after ending.`);
-            }, 3000); // 3000 milliseconds = 3 seconds
-            return;
-          }
-
-          if (time - user.totalTime === 5) {
-            io.to(sessionCode).emit("sendNotification", user);
-          }
-
-          if (user.totalTime - 1 === time) {
-            user.totalTime--;
-          }
-        }
-        io.to(sessionCode).emit("sessionUpdate", session.users);
-      }, 1000);
+    if (!session || !session.users.every((user) => user.isReady)) {
+      console.log("Session not ready or does not exist.");
+      return;
     }
+
+    session.users.sort((a, b) => b.totalTime - a.totalTime);
+    socket.to(sessionCode).emit("startingSession", session.users[0]);
+
+    let remainingTime = session.users[0].totalTime + 5; // Add buffer for notification
+
+    const countdownInterval = setInterval(() => {
+      remainingTime--;
+
+      for (let user of session?.users) {
+        if (remainingTime === 0) {
+          clearInterval(countdownInterval);
+          if (!session.sessionEnded) {
+            io.to(sessionCode).emit("sessionEnded", session.users);
+            session.sessionEnded = true;
+          }
+          setTimeout(() => {
+            delete sessions[sessionCode]; // Removes the session
+          }, 5000); // 5000 milliseconds = 5 seconds
+          return;
+        }
+
+        // Notify user 5 seconds before their countdown starts
+        if (remainingTime - 1 - user.totalTime === 5) {
+          io.to(sessionCode).emit("sendNotification", user);
+        }
+
+        // Adjust user's totalTime as the session countdown progresses
+        if (remainingTime <= user.totalTime) {
+          user.totalTime--;
+        }
+      }
+      io.to(sessionCode).emit("sessionUpdate", session.users);
+    }, 1000);
   };
 
   const removeUserFromSession = (sessionCode, socketId) => {
