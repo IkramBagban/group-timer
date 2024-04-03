@@ -4,9 +4,11 @@ import { useSocket } from '../Context/SocketContext';
 import RenderUserItem from '../Components/RenderUserItem';
 import useNotification from '../hooks/useNotifications';
 import { AppState } from 'react-native';
+import { usePushToken } from '../Context/PushTokenContext';
 
 const CountdownScreen = ({ route, navigation }) => {
   const { sessionCode, userDetail } = route.params;
+  const { pushToken } = usePushToken();
 
   const [userTimes, setUserTimes] = useState([]);
   const [allReady, setAllReady] = useState(false);
@@ -17,13 +19,14 @@ const CountdownScreen = ({ route, navigation }) => {
 
   const socket = useSocket();
   const sendNotification = useNotification();
+  // console.log('pushToken', pushToken)
 
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
       appStateRef.current = nextAppState;
     });
-console.log('appStateRef.current',appStateRef.current)
+    console.log('appStateRef.current', appStateRef.current)
     return () => {
       subscription.remove();
     }
@@ -32,31 +35,51 @@ console.log('appStateRef.current',appStateRef.current)
 
   useEffect(() => {
     const updateUsers = (users) => {
+      console.log("users",users  )
       setUserTimes(users.sort((a, b) => b.totalTime - a.totalTime));
       setAllReady(users.every(user => user.isReady));
     };
-
+    // console.log('t', userTimes)
+    // console.log('userTimes[0]?.totalTime ', userTimes[0]?.totalTime )
+    // if(userTimes.length> 0 && userTimes[0]?.totalTime == 0){
+    //   // userTimes.forEach
+    //   console.log('0', userTimes)
+    // }
     const handleStartingSession = (user) => {
-      // console.log('sending notification to zzzzz', appState)
-      // console.log('back', appStateRef.current === 'background')
-      // console.log('sending notificaiton. ')
-      if (user.userId === userDetail.userId && appStateRef.current === 'background') {
+      // if (user.userId === userDetail.userId && appStateRef.current === 'background') {
+      if (user.userId === userDetail.userId) {
         console.log('sending notification to ' + user.name)
+        // fetch(`${API_URL}/send-notification`, {
+        //   method: 'POST',
+        //   headers: {
+        //     'Content-Type': 'application/json'
+        //   },
 
-        sendNotification("Timer about to start", 'Your timer will start after 5 seconds');
+        //   // body: JSON.stringify({
+
+        //   //   "pushToken": pushToken.data,
+        //   //   "title": "Timer about to start hahaha",
+        //   //   "body": "Your timer will start after 5 seconds!!"
+
+        //   // })
+        // })
+        // socket.emit('alertNotification', { pushToken, title: 'Alert', body: 'Your timer will start after 5 seconds' })
+        sendNotification("Timer about to start", 'Your timer will start after 5 seconds (local)');
       }
     };
 
     const handleSessionEnded = (allUsers) => {
 
-      // if (notificationSent) return; // Prevent sending multiple notifications
+      if (notificationSent) return; // Prevent sending multiple notifications
       let notificationSent = false;
       for (let user of allUsers) {
         if (user.userId === userDetail.userId) {
-          console.log('user complete', user);
+          // console.log('user complete', user);
           if (!notificationSent) {
-            console.log('called notifcationsent', notificationSent)
-            sendNotification("Complete", 'Timer has been completed');
+            // console.log('called notifcationsent', notificationSent)
+            sendNotification("Complete", 'Timer has been completed (Local)');
+
+            // socket.emit('completionNotification', { pushToken, title: 'Complete', body: 'Timer has been completed' })
             notificationSent = true
           }
         }
@@ -73,7 +96,7 @@ console.log('appStateRef.current',appStateRef.current)
 
     socket.on('startingSession', handleStartingSession);
     socket.on('sessionUpdate', updateUsers);
-    socket.on('sendNotification', handleStartingSession);
+    socket.on('readyToSendNotification', handleStartingSession);
     socket.on('sessionEnded', handleSessionEnded);
 
     return () => {
@@ -81,11 +104,16 @@ console.log('appStateRef.current',appStateRef.current)
         socket.emit('removeFromSession', sessionCode, socket.id);
         socket.off('startingSession', handleStartingSession);
         socket.off('sessionUpdate', updateUsers);
-        socket.off('sendNotification', handleStartingSession);
+        socket.off('readyToSendNotification', handleStartingSession);
         socket.off('sessionEnded', handleSessionEnded);
       }
     };
   }, [socket]);
+  // useEffect(() => {
+  //   if (userTimes.length > 0 && userTimes[0]?.totalTime === 0) {
+  //     console.log('0', userTimes);
+  //   }
+  // }, [userTimes]); // Only run this effect when userTimes changes
 
   const handleUserReady = useCallback((item) => {
     if (item.userId === userDetail.userId)
@@ -118,9 +146,6 @@ console.log('appStateRef.current',appStateRef.current)
           onPress={startSession}
           style={[styles.startButton, (sessionStarted || userTimes.length <= 1) ? { backgroundColor: 'grey' } : (allReady ? { backgroundColor: '#32CD32' } : { backgroundColor: 'grey' })]}
           disabled={!allReady || sessionStarted || userTimes.length <= 1} // Disable button if not all ready or session already started
-
-        // style={[styles.startButton, { backgroundColor: allReady ? '#32CD32' : 'grey' }]}
-        // disabled={!allReady}
         >
           <Text style={styles.startButtonText}>Start Session</Text>
         </TouchableOpacity>

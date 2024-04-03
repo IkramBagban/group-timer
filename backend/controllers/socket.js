@@ -1,3 +1,5 @@
+import sendNotication from "../utils/sendNotification.js";
+
 const handleSocketEvents = (io, sessions) => {
   io.on("connection", (socket) => {
     console.log("User connected: " + socket.id);
@@ -68,6 +70,10 @@ const handleSocketEvents = (io, sessions) => {
           clearInterval(countdownInterval);
           if (!session.sessionEnded) {
             io.to(sessionCode).emit("sessionEnded", session.users);
+            socket.on("completionNotification", ({ pushToken, title, body }) =>{
+              console.log('sending notification to on compoletion => ', pushToken)
+              sendNotication(pushToken?.data, title, body)}
+            );
             session.sessionEnded = true;
           }
           setTimeout(() => delete sessions[sessionCode], 5000); // 5000 milliseconds = 5 seconds
@@ -75,9 +81,21 @@ const handleSocketEvents = (io, sessions) => {
         }
 
         // Notify user 5 seconds before their countdown starts
-        if (remainingTime - 1 - user.totalTime === 5)
-          io.to(sessionCode).emit("sendNotification", user);
-
+        if (remainingTime - 1 - user.totalTime === 5) {
+          // console.log("user.pus", user.pushToken.data);
+          // sendNotication(
+          //   user.pushToken.data,
+          //   "this dummy title",
+          //   "this is dummy body"
+          //   );
+          // io.to(sessionCode).emit("sendNotification", user);
+          io.to(sessionCode).emit("readyToSendNotification", user);
+          console.log("Ready?")
+          socket.on("alertNotification", ({ pushToken, title, body }) =>{
+            console.log('sending notification to => ', pushToken, title, body)
+            sendNotication(user.pushToken.data, title, body)}
+          );
+        }
         // Adjust user's totalTime as the session countdown progresses
         if (remainingTime <= user.totalTime) user.totalTime--;
       }

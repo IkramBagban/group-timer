@@ -3,12 +3,16 @@ import { View, TextInput, TouchableOpacity, Text, Alert, StyleSheet } from 'reac
 import { useSocket } from '../Context/SocketContext';
 import Button from '../Components/Button';
 import useNotification from '../hooks/useNotifications';
+import { usePushToken } from '../Context/PushTokenContext';
 
 const SessionCodeScreen = ({ navigation }) => {
   const [code, setCode] = useState('');
   const socket = useSocket()
+  const { pushToken } = usePushToken();
 
+  const sendNotification = useNotification();
   const generateCode = () => {
+    sendNotification("Complete", 'Timer has been completed');
     const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     setCode(newCode);
   };
@@ -22,7 +26,7 @@ const SessionCodeScreen = ({ navigation }) => {
     socket.emit('doesSessionExist', code)
 
     const userId = code + Math.floor(Math.random() * 9000 + 100)
-    let userDetail = { userId: userId, isCreator: false, isReady: false }
+    let userDetail = { userId: userId, isCreator: false, isReady: false, pushToken }
 
     socket.on('isExistingSession', isExistingSession => {
       if (!isExistingSession) {
