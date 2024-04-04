@@ -10,6 +10,7 @@ const handleSocketEvents = (io, sessions) => {
     });
 
     socket.on("createSession", ({ sessionCode, userDetail }) => {
+      console.log('create session')
       if (!sessions[sessionCode]) {
         sessions[sessionCode] = { users: [], sessionActive: false };
       }
