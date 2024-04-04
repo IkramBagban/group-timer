@@ -28,6 +28,10 @@ const handleSocketEvents = (io, sessions) => {
       removeUserFromSession(sessionCode, socketId);
     });
 
+    socket.on("completionNotification", ({ pushToken, title, body }) => {
+       sendNotication(pushToken?.data, title, body);
+    });
+
     socket.on("disconnect", () => {
       console.log(`User disconnected: ${socket.id}`);
     });
@@ -70,10 +74,9 @@ const handleSocketEvents = (io, sessions) => {
           clearInterval(countdownInterval);
           if (!session.sessionEnded) {
             io.to(sessionCode).emit("sessionEnded", session.users);
-            socket.on("completionNotification", ({ pushToken, title, body }) =>{
-              console.log('sending notification to on compoletion => ', pushToken)
-              sendNotication(pushToken?.data, title, body)}
-            );
+            // socket.on("completionNotification", ({ pushToken, title, body }) =>{
+            //   sendNotication(pushToken?.data, title, body)}
+            // );
             session.sessionEnded = true;
           }
           setTimeout(() => delete sessions[sessionCode], 5000); // 5000 milliseconds = 5 seconds
@@ -90,11 +93,11 @@ const handleSocketEvents = (io, sessions) => {
           //   );
           // io.to(sessionCode).emit("sendNotification", user);
           io.to(sessionCode).emit("readyToSendNotification", user);
-          console.log("Ready?")
-          socket.on("alertNotification", ({ pushToken, title, body }) =>{
-            console.log('sending notification to => ', pushToken, title, body)
-            sendNotication(user.pushToken.data, title, body)}
-          );
+          console.log("Ready?");
+          socket.on("alertNotification", ({ pushToken, title, body }) => {
+            console.log("sending notification to => ", pushToken, title, body);
+            sendNotication(user.pushToken.data, title, body);
+          });
         }
         // Adjust user's totalTime as the session countdown progresses
         if (remainingTime <= user.totalTime) user.totalTime--;
