@@ -26,7 +26,7 @@ const CountdownScreen = ({ route, navigation }) => {
     const subscription = AppState.addEventListener('change', nextAppState => {
       appStateRef.current = nextAppState;
     });
-    console.log('appStateRef.current', appStateRef.current)
+    console.log('app State', appStateRef.current)
     return () => {
       subscription.remove();
     }
@@ -35,61 +35,39 @@ const CountdownScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     const updateUsers = (users) => {
-      console.log("users",users  )
+      // console.log("users",users  )
       setUserTimes(users.sort((a, b) => b.totalTime - a.totalTime));
       setAllReady(users.every(user => user.isReady));
     };
-    // console.log('t', userTimes)
-    // console.log('userTimes[0]?.totalTime ', userTimes[0]?.totalTime )
-    // if(userTimes.length> 0 && userTimes[0]?.totalTime == 0){
-    //   // userTimes.forEach
-    //   console.log('0', userTimes)
-    // }
+
     const handleStartingSession = (user) => {
       // if (user.userId === userDetail.userId && appStateRef.current === 'background') {
       if (user.userId === userDetail.userId) {
         console.log('sending notification to ' + user.name)
-        // fetch(`${API_URL}/send-notification`, {
-        //   method: 'POST',
-        //   headers: {
-        //     'Content-Type': 'application/json'
-        //   },
-
-        //   // body: JSON.stringify({
-
-        //   //   "pushToken": pushToken.data,
-        //   //   "title": "Timer about to start hahaha",
-        //   //   "body": "Your timer will start after 5 seconds!!"
-
-        //   // })
-        // })
         // socket.emit('alertNotification', { pushToken, title: 'Alert', body: 'Your timer will start after 5 seconds' })
         sendNotification("Timer about to start", 'Your timer will start after 5 seconds (local)');
       }
     };
 
-    const handleSessionEnded = (allUsers) => {
+    // const handleSessionEnded = (allUsers) => {
 
-      if (notificationSent) return; // Prevent sending multiple notifications
-      let notificationSent = false;
-      for (let user of allUsers) {
-        if (user.userId === userDetail.userId) {
-          // console.log('user complete', user);
-          if (!notificationSent) {
-            // console.log('called notifcationsent', notificationSent)
-            sendNotification("Complete", 'Timer has been completed (Local)');
+    //   if (notificationSent) return; // Prevent sending multiple notifications
+    //   let notificationSent = false;
+    //   for (let user of allUsers) {
+    //     if (user.userId === userDetail.userId) {
+    //       if (!notificationSent) {
+    //         // sendNotification("Complete", 'Timer has been completed (Local)');
+    //         // socket.emit('completionNotification', { pushToken, title: 'Complete', body: 'Timer has been completed' })
+    //         notificationSent = true
+    //       }
+    //     }
+    //   }
 
-            // socket.emit('completionNotification', { pushToken, title: 'Complete', body: 'Timer has been completed' })
-            notificationSent = true
-          }
-        }
-      }
-
-      setTimeout(() => {
-        navigation.navigate('SessionCode')
-        console.log(`Session ${sessionCode} removed after ending.`);
-      }, 5000);
-    };
+    //   setTimeout(() => {
+    //     navigation.navigate('SessionCode')
+    //     console.log(`Session ${sessionCode} removed after ending.`);
+    //   }, 5000);
+    // };
 
     if (!socket) return
 
@@ -97,7 +75,7 @@ const CountdownScreen = ({ route, navigation }) => {
     socket.on('startingSession', handleStartingSession);
     socket.on('sessionUpdate', updateUsers);
     socket.on('readyToSendNotification', handleStartingSession);
-    socket.on('sessionEnded', handleSessionEnded);
+    // socket.on('sessionEnded', handleSessionEnded);
 
     return () => {
       if (socket) {
@@ -105,15 +83,22 @@ const CountdownScreen = ({ route, navigation }) => {
         socket.off('startingSession', handleStartingSession);
         socket.off('sessionUpdate', updateUsers);
         socket.off('readyToSendNotification', handleStartingSession);
-        socket.off('sessionEnded', handleSessionEnded);
+        // socket.off('sessionEnded', handleSessionEnded);
       }
     };
   }, [socket]);
-  // useEffect(() => {
-  //   if (userTimes.length > 0 && userTimes[0]?.totalTime === 0) {
-  //     console.log('0', userTimes);
-  //   }
-  // }, [userTimes]); // Only run this effect when userTimes changes
+
+  useEffect(() => {
+    if (userTimes.length === 0 || !socket.connected) return;
+
+
+    const firstUserTime = userTimes[0]?.totalTime;
+    if (firstUserTime === 0) {
+      socket.emit('completionNotification', { pushToken, title: 'Alert', body: 'Your timer will start after 5 seconds, (background)' })
+      setTimeout(() => navigation.navigate('SessionCode'), 5000);
+    }
+
+  }, [userTimes, socket.connected, navigation, pushToken]);
 
   const handleUserReady = useCallback((item) => {
     if (item.userId === userDetail.userId)

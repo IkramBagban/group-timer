@@ -32,6 +32,7 @@ export default function App() {
 }
 
 const Main = () => {  
+  
   const { setPushToken } = usePushToken();
   useEffect(() => {
     async function configurePushNotifications() {
@@ -78,7 +79,6 @@ const Main = () => {
      const notificationListener = Notifications.addNotificationReceivedListener(
       (notification) => {
         console.log("Notification received:", notification);
-        // You can handle the received notification here
       }
     );
 
@@ -86,7 +86,6 @@ const Main = () => {
     const responseListener = Notifications.addNotificationResponseReceivedListener(
       (response) => {
         console.log("Notification response received:", response);
-        // You can handle the notification response here
       }
     );
 

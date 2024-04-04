@@ -12,7 +12,7 @@ const SessionCodeScreen = ({ navigation }) => {
 
   const sendNotification = useNotification();
   const generateCode = () => {
-    sendNotification("Complete", 'Timer has been completed');
+    // sendNotification("Complete", 'Timer has been completed');
     const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     setCode(newCode);
   };
