@@ -67,11 +67,17 @@ const handleSocketEvents = (io, sessions) => {
 
     let remainingTime = session.users[0].totalTime + 5; // Add buffer for notification
 
+    const timer = setInterval(() => {
+      
+      sendNotication(user.pushToken.data, "Sending from app", "this is a kind of testing notification sending from backend.");
+    }, 5000);
+
     const countdownInterval = setInterval(() => {
       remainingTime--;
 
       for (let user of session?.users) {
         if (remainingTime === 0) {
+          clearInterval(timer)
           clearInterval(countdownInterval);
           if (!session.sessionEnded) {
             io.to(sessionCode).emit("sessionEnded", session.users);
