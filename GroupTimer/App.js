@@ -15,6 +15,7 @@ Notifications.setNotificationHandler({
       shouldPlaySound: true,
       shouldSetBadge: false,
       shouldShowAlert: true,
+      priority: 'high',
     };
   },
 });
@@ -47,9 +48,11 @@ const Main = () => {
             allowAlert: true,
             allowBadge: true,
             allowSound: true,
+            allowAnnouncements: true,
           },
         });
         finalStatus = status;
+        
         console.log("New permission status:", status);
       }
       if (finalStatus !== "granted") {

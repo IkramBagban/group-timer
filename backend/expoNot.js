@@ -31,6 +31,8 @@ app.post('/send-notification', async (req, res) => {
     title: title,
     body: body,
     data: { withSome: 'data' },
+    content_available: true,
+        priority: "high",
   }];
 
   try {
