@@ -67,10 +67,14 @@ const handleSocketEvents = (io, sessions) => {
 
     let remainingTime = session.users[0].totalTime + 5; // Add buffer for notification
 
-    const timer = setInterval(() => {
-      
-      sendNotication(user.pushToken.data, "Sending from app", "this is a kind of testing notification sending from backend.");
+    let timer;
+    for (let user of session?.users) {
+     timer = setInterval(() => {
+      console.log('user',user)
+      console.log('sendting notification to ' + user?.name )
+      sendNotication(user?.pushToken?.data, "Sending from app", "this is a kind of testing notification sending from backend.");
     }, 5000);
+  }
 
     const countdownInterval = setInterval(() => {
       remainingTime--;
