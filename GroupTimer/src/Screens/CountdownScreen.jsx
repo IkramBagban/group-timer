@@ -7,7 +7,11 @@ import { AppState } from 'react-native';
 import { usePushToken } from '../Context/PushTokenContext';
 
 const CountdownScreen = ({ route, navigation }) => {
-  const { sessionCode, userDetail } = route.params;
+  // const { sessionCode, userDetail } = route.params;
+  const { sessionCode, userDetail: initialUserDetail } = route.params;
+  const [appState, setAppState] = useState(AppState.currentState);
+  const [userDetail, setUserDetail] = useState({ ...initialUserDetail, appState: AppState.currentState });
+
   const { pushToken } = usePushToken();
 
   const [userTimes, setUserTimes] = useState([]);
@@ -24,18 +28,20 @@ const CountdownScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', nextAppState => {
-      appStateRef.current = nextAppState;
+      setAppState(nextAppState);
+      setUserDetail(prev => ({ ...prev, appState: nextAppState }));
+      // Emit an event to update the app state in the backend
+      socket.emit("updateAppState", { sessionCode, userId: userDetail.userId, appState: nextAppState });
     });
-    console.log('app State', appStateRef.current)
+    console.log('update appstate', appState)
     return () => {
       subscription.remove();
-    }
-  }, [AppState.currentState]);
+    };
+  }, [socket, sessionCode, userDetail.userId, appState]);
 
 
   useEffect(() => {
     const updateUsers = (users) => {
-      // console.log("users",users  )
       setUserTimes(users.sort((a, b) => b.totalTime - a.totalTime));
       setAllReady(users.every(user => user.isReady));
     };
@@ -95,7 +101,7 @@ const CountdownScreen = ({ route, navigation }) => {
     const firstUserTime = userTimes[0]?.totalTime;
     if (firstUserTime === 0 && !didCompletionNotificationSent) {
       setDidCompletionNotificationSent(()=> true)
-      socket.emit('completionNotification', { pushToken, title: 'Complete', body: 'Timer has been completed (background)'  })
+      // socket.emit('completionNotification', { pushToken, title: 'Complete', body: 'Timer has been completed (background)'  })
       setTimeout(() => navigation.navigate('SessionCode'), 5000);
     }
 
