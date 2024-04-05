@@ -4,7 +4,7 @@ let expo = new Expo();
 
 const sendNotication = async (pushToken, title, body) => {
   console.log("helo");
-let messages = [];
+  let messages = [];
   try {
     // Validation for push token
     if (!Expo.isExpoPushToken(pushToken)) {
@@ -20,6 +20,8 @@ let messages = [];
         title: title,
         body: body,
         data: { test: "data" },
+        content_available: true,
+        priority: "high",
       },
     ];
   } catch (e) {
@@ -28,7 +30,7 @@ let messages = [];
 
   try {
     let ticketChunk = await expo.sendPushNotificationsAsync(messages);
-    console.log('ticketChunk',ticketChunk);
+    console.log("ticketChunk", ticketChunk);
     // res.status(200).send("Notification sent successfully.");
   } catch (error) {
     console.error(error);

@@ -13,7 +13,7 @@ const CountdownScreen = ({ route, navigation }) => {
   const [userTimes, setUserTimes] = useState([]);
   const [allReady, setAllReady] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
-  // const [appState, setAppState] = useState(AppState.currentState);
+  const [didCompletionNotificationSent, setDidCompletionNotificationSent] = useState(false);
 
   const appStateRef = useRef(AppState.currentState);
 
@@ -93,8 +93,9 @@ const CountdownScreen = ({ route, navigation }) => {
 
 
     const firstUserTime = userTimes[0]?.totalTime;
-    if (firstUserTime === 0) {
-      socket.emit('completionNotification', { pushToken, title: 'Alert', body: 'Your timer will start after 5 seconds, (background)' })
+    if (firstUserTime === 0 && !didCompletionNotificationSent) {
+      setDidCompletionNotificationSent(()=> true)
+      socket.emit('completionNotification', { pushToken, title: 'Complete', body: 'Timer has been completed (background)'  })
       setTimeout(() => navigation.navigate('SessionCode'), 5000);
     }
 
