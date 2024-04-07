@@ -26,9 +26,12 @@ const SessionCodeScreen = ({ navigation }) => {
     let userDetail = { userId: userId, isCreator: false, isReady: false, pushToken }
 
     socket.on('isExistingSession', isExistingSession => {
+      
+      // If session does not exist, user is the creator
       if (!isExistingSession) {
         userDetail.isCreator = true;
       }
+      // Navigate to Timer Setup Screen with session code and user details
       navigation.navigate('TimerSetupScreen', { sessionCode: code, userDetail });
     });
   };

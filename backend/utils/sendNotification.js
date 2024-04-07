@@ -1,40 +1,36 @@
 import { Expo } from "expo-server-sdk";
-import { connect } from "http2";
-let expo = new Expo();
+
+const expo = new Expo();
+
+/**
+ * Sends a push notification to a specified device using Expo's push notification service.
+ *
+ * @param {string} pushToken - The Expo push token associated with the device to receive the notification.
+ * @param {string} title - The title of the notification.
+ * @param {string} body - The body text of the notification.
+ */
 
 const sendNotication = async (pushToken, title, body) => {
-  console.log("helo");
-  let messages = [];
   try {
     // Validation for push token
     if (!Expo.isExpoPushToken(pushToken)) {
-      console.error(`Push token ${pushToken} is not a valid Expo push token`);
-      return console.log(`Invalid push token: ${pushToken}`);
+      console.error(`Invalid Expo push token: ${pushToken}`);
+      return;
     }
-
-    // Create the messages that you want to send to clients
-    messages = [
+    const messages = [
       {
         to: pushToken,
-        sound: "default",
-        title: title,
-        body: body,
-        data: { test: "data" },
+        sound: "default", // default notification sound
+        title,
+        body,
         content_available: true,
         priority: "high",
       },
     ];
-  } catch (e) {
-    console.log("e", e);
-  }
 
-  try {
-    let ticketChunk = await expo.sendPushNotificationsAsync(messages);
-    console.log("ticketChunk", ticketChunk);
-    // res.status(200).send("Notification sent successfully.");
+    await expo.sendPushNotificationsAsync(messages);
   } catch (error) {
-    console.error(error);
-    // res.status(500).send("Error sending notification.");
+    console.error("Error sending notification:", error);
   }
 };
 

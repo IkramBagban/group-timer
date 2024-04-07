@@ -1,42 +1,33 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { useSocket } from '../Context/SocketContext';
+
 import RenderUserItem from '../Components/RenderUserItem';
-import useNotification from '../hooks/useNotifications';
-import { AppState } from 'react-native';
 import { usePushToken } from '../Context/PushTokenContext';
+import { useAppState } from '../hooks/useAppState';
 
 const SessionScreen = ({ route, navigation }) => {
   const { sessionCode, userDetail: initialUserDetail } = route.params;
-  const [appState, setAppState] = useState(AppState.currentState);
-  const [userDetail, setUserDetail] = useState({ ...initialUserDetail, appState: AppState.currentState });
 
   const { pushToken } = usePushToken();
+  const appState = useAppState()
+  const socket = useSocket();
 
+  const [userDetail, setUserDetail] = useState({ ...initialUserDetail, appState });
   const [userTimes, setUserTimes] = useState([]);
   const [allReady, setAllReady] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
-  const [didCompletionNotificationSent, setDidCompletionNotificationSent] = useState(false);
-
-  const socket = useSocket();
-  const sendNotification = useNotification();
-  // console.log('pushToken', pushToken)
 
 
+  // Update user's app state in the backend
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', nextAppState => {
-      setAppState(nextAppState);
-      setUserDetail(prev => ({ ...prev, appState: nextAppState }));
-      // Emit an event to update the app state in the backend
-      socket.emit("updateAppState", { sessionCode, userId: userDetail.userId, appState: nextAppState });
-    });
+    setUserDetail(prev => ({ ...prev, appState }));
+    // Emit an event to update the app state in the backend
+    socket.emit("user:updateAppState", { sessionCode, userId: userDetail.userId, appState });
 
-    return () => {
-      subscription.remove();
-    };
   }, [socket, sessionCode, userDetail.userId, appState]);
 
-
+  // Listen for session updates and clean up
   useEffect(() => {
     const updateUsers = (users) => {
       setUserTimes(users.sort((a, b) => b.totalTime - a.totalTime));
@@ -49,12 +40,13 @@ const SessionScreen = ({ route, navigation }) => {
 
     return () => {
       if (socket) {
-        socket.emit('removeFromSession', sessionCode, socket.id);
+        socket.emit('session:leave', sessionCode, socket.id);
         socket.off('sessionUpdate', updateUsers);
       }
     };
   }, [socket]);
 
+  // navigate back to session code screen after a delay.
   useEffect(() => {
     if (userTimes.length === 0 || !socket.connected) return;
 
@@ -65,19 +57,20 @@ const SessionScreen = ({ route, navigation }) => {
 
   }, [userTimes, socket.connected, navigation, pushToken]);
 
+  // Mark the user as ready within the session.
   const handleUserReady = useCallback((item) => {
     if (item.userId === userDetail.userId)
-      socket.emit('userReady', { sessionCode, userId: userDetail.userId });
+      socket.emit('user:ready', { sessionCode, userId: userDetail.userId });
   }, [socket, sessionCode, userDetail]);
 
-
+  // Start the session countdown if all users are ready.
   const startSession = () => {
     if (!allReady) {
       Alert.alert('All users must be ready before starting the session.');
       return;
     }
 
-    socket.emit('startSession', sessionCode);
+    socket.emit('session:startCountdown', sessionCode);
     setSessionStarted(true);
   };
 

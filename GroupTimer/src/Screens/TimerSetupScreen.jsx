@@ -20,7 +20,7 @@ const TimerSetupScreen = ({ navigation, route }) => {
     const totalTime = parseInt(minutes) * 60 + parseInt(seconds);
     userDetail = { ...userDetail, name, totalTime };
 
-    socket.emit('createSession', { sessionCode, userDetail });
+    socket.emit("session:join", { sessionCode, userDetail });
 
     navigation.navigate('SessionScreen', { sessionCode, userDetail });
   };
