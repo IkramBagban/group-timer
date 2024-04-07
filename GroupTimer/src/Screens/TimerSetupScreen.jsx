@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
 import { useSocket } from '../Context/SocketContext';
 
 const TimerSetupScreen = ({ navigation, route }) => {
   let { sessionCode, userDetail } = route.params;
-  
+
   const [name, setName] = useState('');
   const [minutes, setMinutes] = useState('');
   const [seconds, setSeconds] = useState('');
@@ -17,61 +17,72 @@ const TimerSetupScreen = ({ navigation, route }) => {
       return;
     }
 
-    const totalTime = parseInt(minutes, 10) * 60 + parseInt(seconds, 10);
-     userDetail = { ...userDetail,name, totalTime }; 
+    const totalTime = parseInt(minutes) * 60 + parseInt(seconds);
+    userDetail = { ...userDetail, name, totalTime };
 
-    socket.emit('createSession', {sessionCode, userDetail}); 
+    socket.emit('createSession', { sessionCode, userDetail });
 
-    // Navigate to CountdownScreen with user details and session code
-    navigation.navigate('CountdownScreen', { sessionCode, userDetail });
+    navigation.navigate('SessionScreen', { sessionCode, userDetail });
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Set Your Timer</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter your name"
-        placeholderTextColor="#BBBBBB"
-        value={name}
-        onChangeText={setName}
-      />
-      <View style={styles.timeContainer}>
+    <KeyboardAvoidingView 
+      style={styles.container} 
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <View style={styles.content}>
+        <Text style={styles.title}>Set Your Timer</Text>
         <TextInput
-          style={[styles.input, { width: '40%' }]}
-          placeholder="MM"
-          keyboardType="numeric"
-          value={minutes}
-          onChangeText={setMinutes}
+          style={styles.input}
+          placeholder="Enter your name"
+          placeholderTextColor="#BBBBBB"
+          value={name}
+          onChangeText={setName}
         />
-        <TextInput
-          style={[styles.input, { width: '40%' }]}
-          placeholder="SS"
-          keyboardType="numeric"
-          value={seconds}
-          onChangeText={setSeconds}
-        />
+        <View style={styles.timeContainer}>
+          <TextInput
+            style={[styles.input, { width: '45%' }]}
+            placeholder="MM"
+            keyboardType="numeric"
+            placeholderTextColor="#BBBBBB"
+            value={minutes}
+            onChangeText={setMinutes}
+          />
+          <TextInput
+            style={[styles.input, { width: '45%' }]}
+            placeholder="SS"
+            keyboardType="numeric"
+            placeholderTextColor="#BBBBBB"
+            value={seconds}
+            onChangeText={setSeconds}
+          />
+        </View>
+        <TouchableOpacity onPress={handleContinue} style={styles.button}>
+          <Text style={styles.buttonText}>Continue</Text>
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity onPress={handleContinue} style={styles.button}>
-        <Text style={styles.buttonText}>Continue</Text>
-      </TouchableOpacity>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: '#121212',
-    padding: 20,
+  },
+  content: {
+    marginTop: '20%', 
+    width: '100%',
+    paddingHorizontal: 20, 
   },
   title: {
     fontSize: 24,
     color: '#E8E8E8',
     marginBottom: 30,
     fontWeight: 'bold',
+    textAlign: 'center', 
   },
   input: {
     backgroundColor: '#252525',
@@ -88,14 +99,13 @@ const styles = StyleSheet.create({
   timeContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '80%',
     marginBottom: 20,
   },
   button: {
     backgroundColor: '#FF6F00',
     padding: 15,
     borderRadius: 20,
-    width: '80%',
+    width: '100%', 
     justifyContent: 'center',
     alignItems: 'center',
   },

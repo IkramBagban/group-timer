@@ -10,7 +10,6 @@ const handleSocketEvents = (io, sessions) => {
     });
 
     socket.on("createSession", ({ sessionCode, userDetail }) => {
-      console.log("create session");
       if (!sessions[sessionCode]) {
         sessions[sessionCode] = { users: [], sessionActive: false };
       }
@@ -22,18 +21,15 @@ const handleSocketEvents = (io, sessions) => {
     });
     socket.on("updateAppState", ({ sessionCode, userId, appState }) => {
       const session = sessions[sessionCode];
-      // console.log("sessin", session);
       if (session) {
         const userIdx = session.users.findIndex(
           (user) => user.userId === userId
         );
         if (userIdx !== -1) {
-          console.log("app state " + appState);
           sessions[sessionCode].users[userIdx].appState = appState;
           io.to(sessionCode).emit("sessionUpdate", session.users);
         }
       }
-      // updateUserReady(sessionCode, userId);
     });
 
     socket.on("startSession", (sessionCode) => {
@@ -42,10 +38,6 @@ const handleSocketEvents = (io, sessions) => {
 
     socket.on("removeFromSession", (sessionCode, socketId) => {
       removeUserFromSession(sessionCode, socketId);
-    });
-
-    socket.on("completionNotification", ({ pushToken, title, body }) => {
-      sendNotication(pushToken?.data, title, body);
     });
 
     socket.on("disconnect", () => {
@@ -82,29 +74,14 @@ const handleSocketEvents = (io, sessions) => {
 
     let remainingTime = session.users[0].totalTime + 5; // Add buffer for notification
 
-    // let timer;
-    // for (let user of session?.users) {
-    //  timer = setInterval(() => {
-    //   console.log('user',user)
-    //   console.log('sendting notification to ' + user?.name )
-    //   sendNotication(user?.pushToken?.data, "Sending from app", "this is a kind of testing notification sending from backend.");
-    // }, 5000);
-    // }
-
     const countdownInterval = setInterval(() => {
       remainingTime--;
 
       for (let user of session?.users) {
         if (remainingTime === 0) {
-          // clearInterval(timer)
-
           if (!session.sessionEnded) {
-            // io.to(sessionCode).emit("sessionEnded", session.users);
-
             session.users.forEach((user) => {
-              // Here, you're checking for user-specific conditions if needed
               if (user?.appState === "background") {
-                // console.log("--------\n Notifying user:", user.userId);
                 sendNotication(
                   user.pushToken?.data,
                   "Timer Complete",
@@ -112,10 +89,6 @@ const handleSocketEvents = (io, sessions) => {
                 );
               }
             });
-            // }
-            // socket.on("completionNotification", ({ pushToken, title, body }) =>{
-            //   sendNotication(pushToken?.data, title, body)}
-            // );
             session.sessionEnded = true;
           }
           clearInterval(countdownInterval);
@@ -132,17 +105,6 @@ const handleSocketEvents = (io, sessions) => {
               "Your timer will start after 5 seconds."
             );
           }
-
-          // sendNotication(
-          //   user.pushToken.data,
-          //   "this dummy title",
-          //   "this is dummy body"
-          //   );
-          // io.to(sessionCode).emit("sendNotification", user);
-          // io.to(sessionCode).emit("readyToSendNotification", user);
-          socket.on("alertNotification", ({ pushToken, title, body }) => {
-            sendNotication(user.pushToken.data, title, body);
-          });
         }
         // Adjust user's totalTime as the session countdown progresses
         if (remainingTime <= user.totalTime) user.totalTime--;

@@ -2,7 +2,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import React from 'react';
 import SessionCodeScreen from '../Screens/SessionCodeScreen';
 import TimerSetupScreen from '../Screens/TimerSetupScreen';
-import CountdownScreen from '../Screens/CountdownScreen';
+import SessionScreen from '../Screens/SessionScreen';
 
 const StackNavigations = () => {
   const Stack = createStackNavigator();
@@ -21,9 +21,9 @@ const StackNavigations = () => {
         },
       }}
     >
-      <Stack.Screen name='SessionCode' component={SessionCodeScreen} options={{ title: 'Session Code' }}/>
+      <Stack.Screen name='SessionCode' component={SessionCodeScreen} options={{ headerShown:false }}/>
       <Stack.Screen name='TimerSetupScreen' component={TimerSetupScreen} options={{ title: 'Timer Setup' }}/>
-      <Stack.Screen name='CountdownScreen' component={CountdownScreen} options={{ title: 'Countdown' }}/>
+      <Stack.Screen name='SessionScreen' component={SessionScreen} options={{ title: 'Session' }}/>
     </Stack.Navigator>
   );
 }

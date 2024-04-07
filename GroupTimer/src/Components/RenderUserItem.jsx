@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 const RenderUserItem = ({ item, handleUserReady }) => {
-  if (!item.name) return console.log('item',item);
+  if (!item.name) return;
   return (
     <View style={styles.itemContainer}>
       <Text style={styles.userName}>{item.name}</Text>

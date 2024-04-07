@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, Alert, StyleSheet } from 'react-native';
+import { View, TextInput, Text, Alert, StyleSheet } from 'react-native';
 import { useSocket } from '../Context/SocketContext';
 import Button from '../Components/Button';
-import useNotification from '../hooks/useNotifications';
 import { usePushToken } from '../Context/PushTokenContext';
 
 const SessionCodeScreen = ({ navigation }) => {
@@ -10,9 +9,7 @@ const SessionCodeScreen = ({ navigation }) => {
   const socket = useSocket()
   const { pushToken } = usePushToken();
 
-  const sendNotification = useNotification();
   const generateCode = () => {
-    // sendNotification("Complete", 'Timer has been completed');
     const newCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     setCode(newCode);
   };

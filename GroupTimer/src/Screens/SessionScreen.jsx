@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { useSocket } from '../Context/SocketContext';
 import RenderUserItem from '../Components/RenderUserItem';
@@ -6,8 +6,7 @@ import useNotification from '../hooks/useNotifications';
 import { AppState } from 'react-native';
 import { usePushToken } from '../Context/PushTokenContext';
 
-const CountdownScreen = ({ route, navigation }) => {
-  // const { sessionCode, userDetail } = route.params;
+const SessionScreen = ({ route, navigation }) => {
   const { sessionCode, userDetail: initialUserDetail } = route.params;
   const [appState, setAppState] = useState(AppState.currentState);
   const [userDetail, setUserDetail] = useState({ ...initialUserDetail, appState: AppState.currentState });
@@ -18,8 +17,6 @@ const CountdownScreen = ({ route, navigation }) => {
   const [allReady, setAllReady] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
   const [didCompletionNotificationSent, setDidCompletionNotificationSent] = useState(false);
-
-  const appStateRef = useRef(AppState.currentState);
 
   const socket = useSocket();
   const sendNotification = useNotification();
@@ -33,7 +30,7 @@ const CountdownScreen = ({ route, navigation }) => {
       // Emit an event to update the app state in the backend
       socket.emit("updateAppState", { sessionCode, userId: userDetail.userId, appState: nextAppState });
     });
-    console.log('update appstate', appState)
+
     return () => {
       subscription.remove();
     };
@@ -46,50 +43,14 @@ const CountdownScreen = ({ route, navigation }) => {
       setAllReady(users.every(user => user.isReady));
     };
 
-    const handleStartingSession = (user) => {
-      // if (user.userId === userDetail.userId && appStateRef.current === 'background') {
-      if (user.userId === userDetail.userId) {
-        console.log('sending notification to ' + user.name)
-        // socket.emit('alertNotification', { pushToken, title: 'Alert', body: 'Your timer will start after 5 seconds' })
-        sendNotification("Timer about to start", 'Your timer will start after 5 seconds (local)');
-      }
-    };
-
-    // const handleSessionEnded = (allUsers) => {
-
-    //   if (notificationSent) return; // Prevent sending multiple notifications
-    //   let notificationSent = false;
-    //   for (let user of allUsers) {
-    //     if (user.userId === userDetail.userId) {
-    //       if (!notificationSent) {
-    //         // sendNotification("Complete", 'Timer has been completed (Local)');
-    //         // socket.emit('completionNotification', { pushToken, title: 'Complete', body: 'Timer has been completed' })
-    //         notificationSent = true
-    //       }
-    //     }
-    //   }
-
-    //   setTimeout(() => {
-    //     navigation.navigate('SessionCode')
-    //     console.log(`Session ${sessionCode} removed after ending.`);
-    //   }, 5000);
-    // };
-
     if (!socket) return
 
-
-    socket.on('startingSession', handleStartingSession);
     socket.on('sessionUpdate', updateUsers);
-    socket.on('readyToSendNotification', handleStartingSession);
-    // socket.on('sessionEnded', handleSessionEnded);
 
     return () => {
       if (socket) {
         socket.emit('removeFromSession', sessionCode, socket.id);
-        socket.off('startingSession', handleStartingSession);
         socket.off('sessionUpdate', updateUsers);
-        socket.off('readyToSendNotification', handleStartingSession);
-        // socket.off('sessionEnded', handleSessionEnded);
       }
     };
   }, [socket]);
@@ -97,11 +58,8 @@ const CountdownScreen = ({ route, navigation }) => {
   useEffect(() => {
     if (userTimes.length === 0 || !socket.connected) return;
 
-
     const firstUserTime = userTimes[0]?.totalTime;
-    if (firstUserTime === 0 && !didCompletionNotificationSent) {
-      setDidCompletionNotificationSent(()=> true)
-      // socket.emit('completionNotification', { pushToken, title: 'Complete', body: 'Timer has been completed (background)'  })
+    if (firstUserTime === 0) {
       setTimeout(() => navigation.navigate('SessionCode'), 5000);
     }
 
@@ -182,4 +140,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CountdownScreen;
+export default SessionScreen;
