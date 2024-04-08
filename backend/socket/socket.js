@@ -17,8 +17,7 @@ const handleSocketEvents = (io, sessions) => {
     
     // Handles a new or existing user joining a session.
     socket.on("session:join", ({ sessionCode, userDetail }) => {
-      if (!sessions[sessionCode]) sessions[sessionCode] = { users: [] };
-      handleSessionJoin(sessionCode, userDetail, socket);
+        handleSessionJoin(sessionCode, userDetail, socket);
     });
 
     // Updates the readiness of a user within a session.

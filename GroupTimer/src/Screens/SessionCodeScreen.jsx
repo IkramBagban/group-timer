@@ -20,20 +20,20 @@ const SessionCodeScreen = ({ navigation }) => {
       return;
     }
 
-    socket.emit('doesSessionExist', code)
+    // socket.emit('doesSessionExist', code)
 
     const userId = code + Math.floor(Math.random() * 9000 + 100)
     let userDetail = { userId: userId, isCreator: false, isReady: false, pushToken }
 
-    socket.on('isExistingSession', isExistingSession => {
+    // socket.on('isExistingSession', isExistingSession => {
       
-      // If session does not exist, user is the creator
-      if (!isExistingSession) {
-        userDetail.isCreator = true;
-      }
-      // Navigate to Timer Setup Screen with session code and user details
-      navigation.navigate('TimerSetupScreen', { sessionCode: code, userDetail });
-    });
+    //   // If session does not exist, user is the creator
+    //   if (!isExistingSession) {
+    //     userDetail.isCreator = true;
+    //   }
+    //   // Navigate to Timer Setup Screen with session code and user details
+    // });
+    navigation.navigate('TimerSetupScreen', { sessionCode: code, userDetail });
   };
 
   return (

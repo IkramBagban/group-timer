@@ -1,3 +1,84 @@
+// import React, { useEffect, useState } from 'react';
+// import { View, Text, TouchableOpacity, FlatList, StyleSheet, Alert } from 'react-native';
+// import { useSocket } from '../Context/SocketContext';
+// import RenderUserItem from '../Components/RenderUserItem';
+// import { usePushToken } from '../Context/PushTokenContext';
+// import { useAppState } from '../hooks/useAppState';
+
+// const SessionScreen = ({ route, navigation }) => {
+//   const { sessionCode } = route.params;
+//   const { pushToken } = usePushToken();
+//   const appState = useAppState();
+//   const socket = useSocket();
+  
+//   const [userDetails, setUserDetails] = useState([]);
+//   const [sessionStarted, setSessionStarted] = useState(false);
+  
+//   // Derived state for UI rendering to reduce complexity
+//   const userDetail = userDetails.find(user => user.userId === route.params.userDetail.userId);
+//   const allReady = userDetails.every(user => user.isReady);
+//   const canStartSession = allReady && !sessionStarted && userDetails.length > 1;
+
+//   // Combine state updates related to user details into a single useEffect
+//   useEffect(() => {
+//     const updateUsers = (users) => {
+//       setUserDetails(users.sort((a, b) => b.totalTime - a.totalTime));
+//     };
+
+//     const handleSessionUpdate = (users) => updateUsers(users);
+//     const handleDisconnect = () => socket.emit('session:leave', sessionCode, socket.id);
+
+//     socket.on('sessionUpdate', handleSessionUpdate);
+//     return () => {
+//       handleDisconnect();
+//       socket.off('sessionUpdate', handleSessionUpdate);
+//     };
+//   }, [socket, sessionCode]);
+
+//   // Update app state and listen for session end
+//   useEffect(() => {
+//     socket.emit("user:updateAppState", { sessionCode, userId: route.params.userDetail.userId, appState });
+
+//     if (userDetails.length === 0 || !socket.connected) return;
+
+//     const timerEnd = userDetails[0]?.totalTime === 0;
+//     if (timerEnd) {
+//       setTimeout(() => navigation.navigate('SessionCode'), 5000);
+//     }
+//   }, [appState, userDetails, socket.connected, navigation]);
+
+//   const handleUserReady = (userId) => {
+//     if(userDetail.userId === userId)
+//     socket.emit('user:ready', { sessionCode, userId: userDetail?.userId });
+//   };
+
+//   const startSession = () => {
+//     if (!canStartSession) return;
+//     socket.emit('session:startCountdown', sessionCode);
+//     setSessionStarted(true);
+//   };
+
+//   return (
+//     <View style={styles.container}>
+//       <Text style={styles.sessionCode}>Session Code: {sessionCode}</Text>
+//       <FlatList
+//         data={userDetails}
+//         renderItem={({ item }) => <RenderUserItem item={item} handleUserReady={handleUserReady} />}
+//         keyExtractor={item => `${item.userId}${item.name}`}
+//       />
+//       {userDetail?.isCreator && (
+//         <TouchableOpacity
+//           onPress={startSession}
+//           style={[styles.startButton, canStartSession ? { backgroundColor: '#32CD32' } : { backgroundColor: 'grey' }]}
+//           disabled={!canStartSession}
+//         >
+//           <Text style={styles.startButtonText}>Start Session</Text>
+//         </TouchableOpacity>
+//       )}
+//     </View>
+//   );
+// };
+
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, StyleSheet } from 'react-native';
 import { useSocket } from '../Context/SocketContext';
@@ -18,7 +99,7 @@ const SessionScreen = ({ route, navigation }) => {
   const [allReady, setAllReady] = useState(false);
   const [sessionStarted, setSessionStarted] = useState(false);
 
-
+  console.log('userdetail', userDetail)
   // Update user's app state in the backend
   useEffect(() => {
     setUserDetail(prev => ({ ...prev, appState }));
@@ -30,11 +111,12 @@ const SessionScreen = ({ route, navigation }) => {
   // Listen for session updates and clean up
   useEffect(() => {
     const updateUsers = (users) => {
+      console.log('users', users)
       setUserTimes(users.sort((a, b) => b.totalTime - a.totalTime));
       setAllReady(users.every(user => user.isReady));
     };
 
-    if (!socket) return
+    if (!socket) return console.log('socket error')
 
     socket.on('sessionUpdate', updateUsers);
 
@@ -48,7 +130,14 @@ const SessionScreen = ({ route, navigation }) => {
 
   // navigate back to session code screen after a delay.
   useEffect(() => {
+    
     if (userTimes.length === 0 || !socket.connected) return;
+
+    userTimes.forEach(u => {
+      if (u.userId === userDetail.userId) {
+        setUserDetail(u)
+      }
+    });
 
     const firstUserTime = userTimes[0]?.totalTime;
     if (firstUserTime === 0) {

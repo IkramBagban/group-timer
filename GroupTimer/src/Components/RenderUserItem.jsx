@@ -9,7 +9,7 @@ const RenderUserItem = ({ item, handleUserReady }) => {
       <Text style={styles.userTime}>{`${Math.floor(item.totalTime / 60).toString().padStart(2, '0')}:${(item.totalTime % 60).toString().padStart(2, '0')}`}</Text>
       <TouchableOpacity
         style={[styles.readyButton, { backgroundColor: item.isReady ? 'green' : '#007bff' }]}
-        onPress={handleUserReady}
+        onPress={()=> handleUserReady(item.userId)}
       >
         <Text style={styles.readyButtonText}>{item.isReady ? 'Ready' : 'Not Ready'}</Text>
       </TouchableOpacity>

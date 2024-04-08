@@ -4,7 +4,13 @@ import { onSessionEnd } from "../utils/onSessionEnd.js";
 import { notifyUserIfBackground } from "../utils/sendBackgroundNotification.js";
 
 const handleSessionJoin = (sessionCode, userDetail, socket) => {
-  sessions[sessionCode].users.push({ ...userDetail, socketId: socket.id });
+  let isCreator = false;
+  if (!sessions[sessionCode]) {
+    sessions[sessionCode] = { users: [] };
+    isCreator = true;
+  }
+  const ud = { ...userDetail, isCreator: isCreator };
+  sessions[sessionCode].users.push({ ...ud, socketId: socket.id });
   socket.join(sessionCode);
   io.to(sessionCode).emit("sessionUpdate", sessions[sessionCode].users);
 };
@@ -57,10 +63,22 @@ const handleStartSessionCountdown = (sessionCode, socket) => {
 
 const handleSessionLeave = (sessionCode, socketId) => {
   if (sessions[sessionCode]) {
+    // Remove the user from the session
     sessions[sessionCode].users = sessions[sessionCode].users.filter(
       (user) => user.socketId !== socketId
     );
-    io.to(sessionCode).emit("sessionUpdate", sessions[sessionCode].users);
+
+    // Check if there are no more users left in the session
+    if (sessions[sessionCode].users.length === 0) {
+      // If no users are left, delete the session
+      delete sessions[sessionCode];
+      console.log(
+        `Session ${sessionCode} removed, as there are no more users.`
+      );
+    } else {
+      // If there are still users left, emit the updated session to those remaining
+      io.to(sessionCode).emit("sessionUpdate", sessions[sessionCode].users);
+    }
   }
 };
 
