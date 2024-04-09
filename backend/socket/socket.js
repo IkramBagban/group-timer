@@ -27,6 +27,7 @@ const handleSocketEvents = (io, sessions) => {
 
     // Updates the application state of a user within a session.
     socket.on("user:updateAppState", ({ sessionCode, userId, appState }) => {
+      // console.log('appstate', appState)
       updateUserAttribute(sessionCode, userId, "appState", appState);
     });
 

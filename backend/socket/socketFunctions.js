@@ -47,7 +47,7 @@ const handleStartSessionCountdown = (sessionCode, socket) => {
 
     for (let user of session?.users) {
       // Notify user 5 seconds before their countdown starts
-      if (remainingTime === user.totalTime + 5) {
+      if (remainingTime + 1 === user.totalTime + 5) {
         notifyUserIfBackground(
           user,
           "Alert",

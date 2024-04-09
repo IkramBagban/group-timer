@@ -21,7 +21,6 @@ Notifications.setNotificationHandler({
 });
 
 export default function App() {
-  
 
   return (
     <PushTokenProvider>
